@@ -1,19 +1,28 @@
-import ApplicationLogo from '@/components/ApplicationLogo'
-import Dropdown from '@/components/Dropdown'
-import Link from 'next/link'
-import NavLink from '@/components/NavLink'
+import React, { useState } from 'react';
+import ApplicationLogo from '@/components/ApplicationLogo';
+import Dropdown from '@/components/Dropdown';
+import Link from 'next/link';
+import NavLink from '@/components/NavLink';
 import ResponsiveNavLink, {
     ResponsiveNavButton,
-} from '@/components/ResponsiveNavLink'
-import { DropdownButton } from '@/components/DropdownLink'
-import { useAuth } from '@/hooks/auth'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+} from '@/components/ResponsiveNavLink';
+import { DropdownButton } from '@/components/DropdownLink';
+import { useAuth } from '@/hooks/auth';
+import { usePathname } from 'next/navigation';
 
-const Navigation = ({ user }) => {
-    const { logout } = useAuth()
+interface User {
+    name?: string;
+    email?: string;
+}
 
-    const [open, setOpen] = useState(false)
+interface NavigationProps {
+    user: User;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ user }) => {
+    const { logout } = useAuth();
+
+    const [open, setOpen] = useState<boolean>(false);
 
     return (
         <nav className="bg-white border-b border-gray-100">

@@ -5,11 +5,16 @@ import Input from '@/components/Input'
 import InputError from '@/components/InputError'
 import Label from '@/components/Label'
 import { useAuth } from '@/hooks/auth'
-import { useEffect, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus'
+import React from 'react'
 
-const PasswordReset = () => {
+interface ValidationErrors {
+    [key: string]: string[]
+}
+
+const PasswordReset = (): React.ReactElement => {
     const searchParams = useSearchParams()
 
     const { resetPassword } = useAuth({ middleware: 'guest' })
@@ -17,10 +22,10 @@ const PasswordReset = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [passwordConfirmation, setPasswordConfirmation] = useState('')
-    const [errors, setErrors] = useState([])
-    const [status, setStatus] = useState(null)
+    const [errors, setErrors] = useState<ValidationErrors>({})
+    const [status, setStatus] = useState<string | null>(null)
 
-    const submitForm = event => {
+    const submitForm = (event: FormEvent) => {
         event.preventDefault()
 
         resetPassword({
@@ -33,8 +38,11 @@ const PasswordReset = () => {
     }
 
     useEffect(() => {
-        setEmail(searchParams.get('email'))
-    }, [searchParams.get('email')])
+        const emailParam = searchParams.get('email')
+        if (emailParam) {
+            setEmail(emailParam)
+        }
+    }, [searchParams])
 
     return (
         <>
@@ -44,42 +52,42 @@ const PasswordReset = () => {
             <form onSubmit={submitForm}>
                 {/* Email Address */}
                 <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label className="" htmlFor="email">Email</Label>
 
                     <Input
                         id="email"
                         type="email"
                         value={email}
                         className="block mt-1 w-full"
-                        onChange={event => setEmail(event.target.value)}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
                         required
                         autoFocus
                     />
 
-                    <InputError messages={errors.email} className="mt-2" />
+                    <InputError messages={errors.email || []} className="mt-2" />
                 </div>
 
                 {/* Password */}
                 <div className="mt-4">
-                    <Label htmlFor="password">Password</Label>
+                    <Label className="" htmlFor="password">Password</Label>
                     <Input
                         id="password"
                         type="password"
                         value={password}
                         className="block mt-1 w-full"
-                        onChange={event => setPassword(event.target.value)}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
                         required
                     />
 
                     <InputError
-                        messages={errors.password}
+                        messages={errors.password || []}
                         className="mt-2"
                     />
                 </div>
 
                 {/* Confirm Password */}
                 <div className="mt-4">
-                    <Label htmlFor="passwordConfirmation">
+                    <Label className="" htmlFor="passwordConfirmation">
                         Confirm Password
                     </Label>
 
@@ -88,20 +96,20 @@ const PasswordReset = () => {
                         type="password"
                         value={passwordConfirmation}
                         className="block mt-1 w-full"
-                        onChange={event =>
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
                             setPasswordConfirmation(event.target.value)
                         }
                         required
                     />
 
                     <InputError
-                        messages={errors.password_confirmation}
+                        messages={errors.password_confirmation || []}
                         className="mt-2"
                     />
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <Button>Reset Password</Button>
+                    <Button className="">Reset Password</Button>
                 </div>
             </form>
         </>

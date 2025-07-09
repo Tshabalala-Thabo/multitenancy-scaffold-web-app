@@ -1,10 +1,11 @@
 import LoginLinks from '@/app/LoginLinks'
+import { Metadata } from 'next'
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Laravel',
 }
 
-const Home = () => {
+const Home: React.FC = () => {
     return (
         <>
             <div className="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center sm:pt-0">

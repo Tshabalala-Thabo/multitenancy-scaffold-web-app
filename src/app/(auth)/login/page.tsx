@@ -6,11 +6,15 @@ import InputError from '@/components/InputError'
 import Label from '@/components/Label'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/auth'
-import { useEffect, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus'
 
-const Login = () => {
+interface ValidationErrors {
+    [key: string]: string[]
+}
+
+const Login = (): React.ReactElement => {
     const router = useRouter()
 
     const { login } = useAuth({
@@ -21,18 +25,18 @@ const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [shouldRemember, setShouldRemember] = useState(false)
-    const [errors, setErrors] = useState([])
-    const [status, setStatus] = useState(null)
+    const [errors, setErrors] = useState<ValidationErrors>({})
+    const [status, setStatus] = useState<string | null>(null)
 
     useEffect(() => {
-        if (router.reset?.length > 0 && errors.length === 0) {
-            setStatus(atob(router.reset))
+        if (typeof window !== 'undefined' && window.location.search.includes('reset') && Object.keys(errors).length === 0) {
+            setStatus(atob(window.location.search.split('reset=')[1]))
         } else {
             setStatus(null)
         }
     })
 
-    const submitForm = async event => {
+    const submitForm = async (event: FormEvent) => {
         event.preventDefault()
 
         login({
@@ -57,7 +61,7 @@ const Login = () => {
                         type="email"
                         value={email}
                         className="block mt-1 w-full"
-                        onChange={event => setEmail(event.target.value)}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
                         required
                         autoFocus
                     />
@@ -74,7 +78,7 @@ const Login = () => {
                         type="password"
                         value={password}
                         className="block mt-1 w-full"
-                        onChange={event => setPassword(event.target.value)}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
                         required
                         autoComplete="current-password"
                     />
@@ -95,7 +99,7 @@ const Login = () => {
                             type="checkbox"
                             name="remember"
                             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            onChange={event =>
+                            onChange={(event: ChangeEvent<HTMLInputElement>) =>
                                 setShouldRemember(event.target.checked)
                             }
                         />

@@ -1,12 +1,17 @@
 import Link from 'next/link'
 import AuthCard from '@/app/(auth)/AuthCard'
 import ApplicationLogo from '@/components/ApplicationLogo'
+import { ReactNode } from 'react'
 
 export const metadata = {
     title: 'Laravel',
 }
 
-const Layout = ({ children }) => {
+interface LayoutProps {
+    children: ReactNode
+}
+
+const Layout = ({ children }: LayoutProps): React.ReactElement => {
     return (
         <div>
             <div className="text-gray-900 antialiased">

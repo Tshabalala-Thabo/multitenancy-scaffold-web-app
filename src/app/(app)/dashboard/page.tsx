@@ -1,10 +1,11 @@
-import Header from '@/app/(app)/Header'
+import React from 'react';
+import Header from '@/app/(app)/Header';
 
 export const metadata = {
     title: 'Laravel - Dashboard',
-}
+};
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
     return (
         <>
             <Header title="Dashboard" />

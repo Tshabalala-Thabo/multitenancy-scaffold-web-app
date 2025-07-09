@@ -1,4 +1,5 @@
 import { Nunito } from 'next/font/google'
+import { Metadata } from 'next'
 import '@/app/global.css'
 
 const nunitoFont = Nunito({
@@ -6,16 +7,20 @@ const nunitoFont = Nunito({
     display: 'swap',
 })
 
-const RootLayout = ({ children }) => {
+export const metadata: Metadata = {
+    title: 'Laravel',
+}
+
+interface RootLayoutProps {
+    children: React.ReactNode
+}
+
+const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
     return (
         <html lang="en" className={nunitoFont.className}>
             <body className="antialiased">{children}</body>
         </html>
     )
-}
-
-export const metadata = {
-    title: 'Laravel',
 }
 
 export default RootLayout
