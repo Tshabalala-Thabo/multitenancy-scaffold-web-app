@@ -1,6 +1,3 @@
----
-
-````markdown
 # 🏗️ Multitenancy Scaffold Web App
 
 A modern, dashboard-based multitenancy web application built with **Next.js** and **TypeScript**, following the **Next Breeze** architecture.
