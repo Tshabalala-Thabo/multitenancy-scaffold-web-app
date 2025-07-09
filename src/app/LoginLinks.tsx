@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useAuth } from '@/hooks/auth'
 
-const LoginLinks = () => {
+const LoginLinks: React.FC = () => {
     const { user } = useAuth({ middleware: 'guest' })
 
     return (

@@ -3,14 +3,15 @@
 import Button from '@/components/Button'
 import { useAuth } from '@/hooks/auth'
 import { useState } from 'react'
+import React from 'react'
 
-const Page = () => {
+const Page = (): React.ReactElement => {
     const { logout, resendEmailVerification } = useAuth({
         middleware: 'auth',
         redirectIfAuthenticated: '/dashboard',
     })
 
-    const [status, setStatus] = useState(null)
+    const [status, setStatus] = useState<string | null>(null)
 
     return (
         <>
@@ -29,7 +30,7 @@ const Page = () => {
             )}
 
             <div className="mt-4 flex items-center justify-between">
-                <Button onClick={() => resendEmailVerification({ setStatus })}>
+                <Button className="" onClick={() => resendEmailVerification({ setStatus })}>
                     Resend Verification Email
                 </Button>
 

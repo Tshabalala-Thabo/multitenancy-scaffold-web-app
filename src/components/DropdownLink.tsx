@@ -1,9 +1,15 @@
+import React, { ReactNode, ButtonHTMLAttributes } from 'react'
 import Link from 'next/link'
 import { Menu } from '@headlessui/react'
+import { LinkProps } from 'next/link'
 
-const DropdownLink = ({ children, ...props }) => (
+interface DropdownLinkProps extends Omit<LinkProps, 'children'> {
+    children: ReactNode
+}
+
+const DropdownLink: React.FC<DropdownLinkProps> = ({ children, ...props }) => (
     <Menu.Item>
-        {({ active }) => (
+        {({ active }: { active: boolean }) => (
             <Link
                 {...props}
                 className={`w-full text-left block px-4 py-2 text-sm leading-5 text-gray-700 ${
@@ -15,9 +21,13 @@ const DropdownLink = ({ children, ...props }) => (
     </Menu.Item>
 )
 
-export const DropdownButton = ({ children, ...props }) => (
+interface DropdownButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    children: ReactNode
+}
+
+export const DropdownButton: React.FC<DropdownButtonProps> = ({ children, ...props }) => (
     <Menu.Item>
-        {({ active }) => (
+        {({ active }: { active: boolean }) => (
             <button
                 className={`w-full text-left block px-4 py-2 text-sm leading-5 text-gray-700 ${
                     active ? 'bg-gray-100' : ''

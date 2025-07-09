@@ -1,4 +1,11 @@
-const InputError = ({ messages = [], className = '' }) => (
+import React from 'react'
+
+interface InputErrorProps {
+    messages?: string[]
+    className?: string
+}
+
+const InputError: React.FC<InputErrorProps> = ({ messages = [], className = '' }) => (
     <>
         {messages.length > 0 && (
             <>

@@ -6,9 +6,14 @@ import InputError from '@/components/InputError'
 import Label from '@/components/Label'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/auth'
-import { useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
+import React from 'react'
 
-const Page = () => {
+interface ValidationErrors {
+    [key: string]: string[]
+}
+
+const Page = (): React.ReactElement => {
     const { register } = useAuth({
         middleware: 'guest',
         redirectIfAuthenticated: '/dashboard',
@@ -18,9 +23,9 @@ const Page = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [passwordConfirmation, setPasswordConfirmation] = useState('')
-    const [errors, setErrors] = useState([])
+    const [errors, setErrors] = useState<ValidationErrors>({})
 
-    const submitForm = event => {
+    const submitForm = (event: FormEvent) => {
         event.preventDefault()
 
         register({
@@ -36,57 +41,57 @@ const Page = () => {
         <form onSubmit={submitForm}>
             {/* Name */}
             <div>
-                <Label htmlFor="name">Name</Label>
+                <Label className="" htmlFor="name">Name</Label>
 
                 <Input
                     id="name"
                     type="text"
                     value={name}
                     className="block mt-1 w-full"
-                    onChange={event => setName(event.target.value)}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value)}
                     required
                     autoFocus
                 />
 
-                <InputError messages={errors.name} className="mt-2" />
+                <InputError messages={errors.name || []} className="mt-2" />
             </div>
 
             {/* Email Address */}
             <div className="mt-4">
-                <Label htmlFor="email">Email</Label>
+                <Label className="" htmlFor="email">Email</Label>
 
                 <Input
                     id="email"
                     type="email"
                     value={email}
                     className="block mt-1 w-full"
-                    onChange={event => setEmail(event.target.value)}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
                     required
                 />
 
-                <InputError messages={errors.email} className="mt-2" />
+                <InputError messages={errors.email as string[] || []} className="mt-2" />
             </div>
 
             {/* Password */}
             <div className="mt-4">
-                <Label htmlFor="password">Password</Label>
+                <Label className="" htmlFor="password">Password</Label>
 
                 <Input
                     id="password"
                     type="password"
                     value={password}
                     className="block mt-1 w-full"
-                    onChange={event => setPassword(event.target.value)}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
                     required
                     autoComplete="new-password"
                 />
 
-                <InputError messages={errors.password} className="mt-2" />
+                <InputError messages={errors.password || []} className="mt-2" />
             </div>
 
             {/* Confirm Password */}
             <div className="mt-4">
-                <Label htmlFor="passwordConfirmation">
+                <Label className="" htmlFor="passwordConfirmation">
                     Confirm Password
                 </Label>
 
@@ -95,14 +100,14 @@ const Page = () => {
                     type="password"
                     value={passwordConfirmation}
                     className="block mt-1 w-full"
-                    onChange={event =>
+                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
                         setPasswordConfirmation(event.target.value)
                     }
                     required
                 />
 
                 <InputError
-                    messages={errors.password_confirmation}
+                    messages={errors.password_confirmation || []}
                     className="mt-2"
                 />
             </div>
