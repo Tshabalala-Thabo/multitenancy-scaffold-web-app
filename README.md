@@ -1,91 +1,161 @@
-# Laravel Breeze - Next.js Edition ▲
+````markdown
+# 🏗️ Multitenancy Scaffold Web App
 
-## Introduction
+A modern, dashboard-based multitenancy web application built with **Next.js** and **TypeScript**, following the **Next Breeze** architecture.
 
-This repository is an implementation of the [Laravel Breeze](https://laravel.com/docs/starter-kits) application / authentication starter kit frontend in [Next.js](https://nextjs.org). All of the authentication boilerplate is already written for you - powered by [Laravel Sanctum](https://laravel.com/docs/sanctum), allowing you to quickly begin pairing your beautiful Next.js frontend with a powerful Laravel backend.
+This scaffold is ideal for applications where users may belong to **multiple tenants** and hold **multiple roles per tenant** (e.g., Admin, Manager, Member). It includes a role-based access control (RBAC) system and a working feature for **tenant-specific announcements**.
 
-## Official Documentation
+Built with a modular, clean UI using **Tailwind CSS** and **ShadCN** components.
 
-### Installation
+---
 
-First, create a Next.js compatible Laravel backend by installing Laravel Breeze into a [fresh Laravel application](https://laravel.com/docs/installation) and installing Breeze's API scaffolding:
+## 📸 Screenshots
+
+### 🔐 Login Page
+
+![Login Screenshot](./public/screenshots/login.png)
+
+### 📊 Tenant Dashboard
+
+![Dashboard Screenshot](./public/screenshots/dashboard.png)
+
+---
+
+## 🧩 Features
+
+- ✅ **Next.js (App Router)** with TypeScript
+- ✅ **Next Breeze** architecture
+- ✅ **Multitenancy**: users can belong to multiple tenants and switch context
+- ✅ **Multi-role RBAC** per tenant (Spatie-style)
+- ✅ **Authentication** via Laravel Breeze API
+- ✅ **ShadCN UI components**
+- ✅ **Tailwind CSS** with full utility-first styling
+- ✅ **Dashboard layout with protected routes**
+- ✅ **Tenant-based Announcements**
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer            | Technology                            |
+|------------------|----------------------------------------|
+| Frontend         | [Next.js](https://nextjs.org/)         |
+| Language         | TypeScript                             |
+| Styling          | Tailwind CSS + [ShadCN](https://ui.shadcn.dev) |
+| Auth             | Laravel Breeze (API backend assumed)   |
+| Roles/Permissions| Custom RBAC system per tenant          |
+| UI Components    | ShadCN UI                              |
+
+---
+
+## ⚙️ Installation
 
 ```bash
-# Create the Laravel application...
-laravel new next-backend
+# Clone the repo
+git clone https://github.com/your-org/multitenancy-scaffold-web-app.git
 
-cd next-backend
+cd multitenancy-scaffold-web-app
 
-# Install Breeze and dependencies...
-composer require laravel/breeze --dev
+# Install dependencies
+npm install
 
-php artisan breeze:install api
+# Create and configure the environment
+cp .env.example .env.local
+````
 
-# Run database migrations...
-php artisan migrate
+Update your `.env.local` file to set:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-Next, ensure that your application's `APP_URL` and `FRONTEND_URL` environment variables are set to `http://localhost:8000` and `http://localhost:3000`, respectively.
+---
 
-After defining the appropriate environment variables, you may serve the Laravel application using the `serve` Artisan command:
+## 🚀 Run the App
 
 ```bash
-# Serve the application...
-php artisan serve
-```
-
-Next, clone this repository and install its dependencies with `yarn install` or `npm install`. Then, copy the `.env.example` file to `.env.local` and supply the URL of your backend:
-
-```
-NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-```
-
-Finally, run the application via `npm run dev`. The application will be available at `http://localhost:3000`:
-
-```
 npm run dev
 ```
 
-> Note: Currently, we recommend using `localhost` during local development of your backend and frontend to avoid CORS "Same-Origin" issues.
+Visit: [http://localhost:3000](http://localhost:3000)
 
-### Authentication Hook
+---
 
-This Next.js application contains a custom `useAuth` React hook, designed to abstract all authentication logic away from your pages. In addition, the hook can be used to access the currently authenticated user:
+## 🧱 Folder Structure
 
-```js
-const ExamplePage = () => {
-    const { logout, user } = useAuth({ middleware: 'auth' })
+```
+📁 /app
+├── (auth)         # Login/Register routes
+├── (dashboard)    # Protected tenant-based dashboard
+├── layout.tsx     # Auth/session provider wrapper
 
-    return (
-        <>
-            <p>{user?.name}</p>
-
-            <button onClick={logout}>Sign out</button>
-        </>
-    )
-}
-
-export default ExamplePage
+📁 /components      # Reusable UI (includes ShadCN components)
+📁 /hooks           # Custom hooks (e.g., useAuth, useTenant)
+📁 /lib             # Utilities (auth client, API client)
+📁 /types           # Global types and interfaces
+📁 /public/screenshots
+📁 /styles          # Tailwind base + custom styles
 ```
 
-> Note: You will need to use [optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining) (`user?.name` instead of `user.name`) when accessing properties on the user object to account for Next.js's initial server-side render.
+---
 
-### Named Routes
+## 🔐 Role-Based Access (Per Tenant)
 
-For convenience, [Ziggy](https://github.com/tighten/ziggy#spas-or-separate-repos) may be used to reference your Laravel application's named route URLs from your React application.
+RBAC is scoped by tenant. A single user can be:
 
-## Contributing
+* an **Admin** in one tenant,
+* a **Member** in another.
 
-Thank you for considering contributing to Breeze Next! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Access control is handled using role guards and custom hooks.
 
-## Code of Conduct
+```ts
+const { roles, tenant } = useAuth()
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+if (roles.includes("admin")) {
+  // Render admin controls
+}
+```
 
-## Security Vulnerabilities
+---
 
-Please review [our security policy](https://github.com/laravel/breeze-next/security/policy) on how to report security vulnerabilities.
+## 📨 Announcements Feature
 
-## License
+Each tenant can manage their own announcements:
 
-Laravel Breeze Next is open-sourced software licensed under the [MIT license](LICENSE.md).
+* Admins can create/edit/delete announcements.
+* Members see announcements scoped to their current tenant.
+* Fully protected by roles and tenant context.
+
+---
+
+## 🏢 Tenant Switching
+
+Users can seamlessly switch between tenants:
+
+```ts
+const { currentTenant, switchTenant } = useTenant()
+
+switchTenant('tenant-id')
+```
+
+ShadCN dropdown UI is used for the **tenant switcher**.
+
+---
+
+
+## 🛤 Future Enhancements
+
+* 🧾 Billing and subscription logic
+
+---
+
+## 🤝 Contributing
+
+Got suggestions or improvements? Feel free to open issues or submit pull requests.
+
+---
+
+## 📜 License
+
+MIT License © 2025 N1375N13
+
