@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useTenant } from "@/hooks/useTenant"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -25,161 +25,23 @@ import {
 } from "lucide-react"
 import { TenantModal } from "@/components/TenantModal"
 
-// Mock data for tenants
-const mockTenants = [
-  {
-    id: 1,
-    name: "Acme Corporation",
-    slug: "acme-corp",
-    domain: "acme.example.com",
-    status: "active",
-    administrators: [
-      {
-        id: 1,
-        admin_name: "John Doe",
-        admin_email: "john@acme.com",
-      },
-      {
-        id: 2,
-        admin_name: "Jane Smith",
-        admin_email: "jane@acme.com",
-      },
-    ],
-    address: {
-      street_address: "123 Business St",
-      suburb: "Downtown",
-      city: "New York",
-      province: "NY",
-      postal_code: "10001",
-    },
-    logo: null,
-    created_at: "2024-01-15",
-    updated_at: "2024-03-10",
-    users_count: 45,
-    last_activity: "2024-03-15",
-  },
-  {
-    id: 2,
-    name: "TechStart Inc",
-    slug: "techstart",
-    domain: "techstart.example.com",
-    status: "active",
-    administrators: [
-      {
-        id: 3,
-        admin_name: "Mike Johnson",
-        admin_email: "mike@techstart.com",
-      },
-    ],
-    address: {
-      street_address: "456 Innovation Ave",
-      suburb: "Tech District",
-      city: "San Francisco",
-      province: "CA",
-      postal_code: "94105",
-    },
-    logo: null,
-    created_at: "2024-02-20",
-    updated_at: "2024-03-05",
-    users_count: 23,
-    last_activity: "2024-03-14",
-  },
-  {
-    id: 3,
-    name: "Global Solutions",
-    slug: "global-solutions",
-    domain: null,
-    status: "pending",
-    administrators: [
-      {
-        id: 4,
-        admin_name: "Sarah Wilson",
-        admin_email: "sarah@globalsolutions.com",
-      },
-    ],
-    address: {
-      street_address: "789 Enterprise Blvd",
-      suburb: "Business Park",
-      city: "Chicago",
-      province: "IL",
-      postal_code: "60601",
-    },
-    logo: null,
-    created_at: "2024-03-10",
-    updated_at: "2024-03-10",
-    users_count: 0,
-    last_activity: "2024-03-10",
-  },
-]
-
 export default function TenantsPage() {
-  const [tenants, setTenants] = useState(mockTenants)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingTenant, setEditingTenant] = useState(null)
-  const [currentView, setCurrentView] = useState("list")
-  const [selectedTenant, setSelectedTenant] = useState(null)
-
-  const filteredTenants = tenants.filter(
-    (tenant) =>
-      tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.administrators.some((admin) => admin.admin_email.toLowerCase().includes(searchTerm.toLowerCase())),
-  )
-
-  const handleCreateTenant = () => {
-    setEditingTenant(null)
-    setIsModalOpen(true)
-  }
-
-  const handleEditTenant = (tenant) => {
-    setEditingTenant(tenant)
-    setIsModalOpen(true)
-  }
-
-  const handleViewTenant = (tenant) => {
-    setSelectedTenant(tenant)
-    setCurrentView("detail")
-  }
-
-  const handleBackToList = () => {
-    setCurrentView("list")
-    setSelectedTenant(null)
-  }
-
-  const handleDeleteTenant = (tenantId) => {
-    setTenants(tenants.filter((t) => t.id !== tenantId))
-    // If we're viewing the deleted tenant, go back to list
-    if (selectedTenant && selectedTenant.id === tenantId) {
-      handleBackToList()
-    }
-  }
-
-  const handleSaveTenant = (tenantData) => {
-    if (editingTenant) {
-      // Update existing tenant
-      const updatedTenants = tenants.map((t) => (t.id === editingTenant.id ? { ...t, ...tenantData } : t))
-      setTenants(updatedTenants)
-
-      // Update selected tenant if it's the one being edited
-      if (selectedTenant && selectedTenant.id === editingTenant.id) {
-        setSelectedTenant({ ...selectedTenant, ...tenantData })
-      }
-    } else {
-      // Create new tenant
-      const newTenant = {
-        id: Math.max(...tenants.map((t) => t.id)) + 1,
-        ...tenantData,
-        status: "active",
-        created_at: new Date().toISOString().split("T")[0],
-        updated_at: new Date().toISOString().split("T")[0],
-        users_count: 0,
-        last_activity: new Date().toISOString().split("T")[0],
-      }
-      setTenants([...tenants, newTenant])
-    }
-    setIsModalOpen(false)
-  }
+  const {
+    searchTerm,
+    setSearchTerm,
+    isModalOpen,
+    setIsModalOpen,
+    editingTenant,
+    currentView,
+    selectedTenant,
+    filteredTenants,
+    handleCreateTenant,
+    handleEditTenant,
+    handleViewTenant,
+    handleBackToList,
+    handleDeleteTenant,
+    handleSaveTenant,
+  } = useTenant()
 
   // List View Component
   const ListView = () => (
