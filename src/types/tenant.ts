@@ -6,8 +6,16 @@ export interface Tenant {
     status: 'active' | 'pending' | 'inactive';
     administrators: {
         id: number;
-        admin_name: string;
-        admin_email: string;
+        name: string;
+        email: string;
+        password: string;
+    }[];
+    users: {
+        id: number;
+        name: string;
+        email: string;
+        password: string;
+        roles: string[];
     }[];
     address: {
         street_address: string;
@@ -16,7 +24,8 @@ export interface Tenant {
         province: string;
         postal_code: string;
     };
-    logo: string | null;
+    logo?: string | null;
+    logo_preview: string | null;
     created_at: string;
     updated_at: string;
     users_count: number;

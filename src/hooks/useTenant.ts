@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Tenant } from '@/types/tenant';
 import axios from '@/lib/axios';
-import { useRouter } from 'next/navigation';
 
 export const useTenant = () => {
     const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -10,7 +9,6 @@ export const useTenant = () => {
     const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
     const [currentView, setCurrentView] = useState('list');
     const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
-    const router = useRouter();
 
     const fetchTenants = async () => {
         try {
@@ -29,7 +27,7 @@ export const useTenant = () => {
         (tenant) =>
             tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             tenant.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tenant.administrators.some((admin) => admin.admin_email.toLowerCase().includes(searchTerm.toLowerCase())),
+            tenant.users.some((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase())),
     );
 
     const handleCreateTenant = () => {
