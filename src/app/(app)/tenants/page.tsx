@@ -538,7 +538,7 @@ export default function TenantsPage() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveTenant}
-                tenant={editingTenant}
+                tenant={editingTenant || undefined}
             />
         </main>
     )

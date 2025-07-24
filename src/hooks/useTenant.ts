@@ -69,8 +69,44 @@ export const useTenant = () => {
 
     const handleSaveTenant = async (tenantData: Partial<Tenant>) => {
         try {
+            let response;
+
             if (editingTenant) {
-                const response = await axios.put(`/api/tenants/${editingTenant.id}`, tenantData);
+                if (tenantData.logo instanceof File) {
+                    const formData = new FormData();
+
+                    Object.entries(tenantData).forEach(([key, value]) => {
+                        if (key !== 'logo' && key !== 'logo_preview') {
+                            if (key === 'address' && typeof value === 'object' && value !== null) {
+                                Object.entries(value).forEach(([addressKey, addressValue]) => {
+                                    formData.append(`address[${addressKey}]`, String(addressValue));
+                                });
+                            } else if (key === 'administrators' && Array.isArray(value)) {
+                                value.forEach((admin, index) => {
+                                    Object.entries(admin).forEach(([adminKey, adminValue]) => {
+                                        formData.append(`administrators[${index}][${adminKey}]`, String(adminValue));
+                                    });
+                                });
+                            } else if (typeof value === 'object' && value !== null) {
+                                formData.append(key, JSON.stringify(value));
+                            } else {
+                                formData.append(key, String(value));
+                            }
+                        }
+                    });
+
+                    formData.append('logo', tenantData.logo);
+
+                    response = await axios.put(`/api/tenants/${editingTenant.id}`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                } else {
+                    const { logo, logo_preview, ...dataWithoutLogo } = tenantData;
+                    response = await axios.put(`/api/tenants/${editingTenant.id}`, dataWithoutLogo);
+                }
+
                 const updatedTenant = response.data;
                 const updatedTenants = tenants.map((t) => (t.id === editingTenant.id ? updatedTenant : t));
                 setTenants(updatedTenants);
@@ -78,13 +114,53 @@ export const useTenant = () => {
                     setSelectedTenant(updatedTenant);
                 }
             } else {
-                const response = await axios.post('/api/tenants', tenantData);
+                if (tenantData.logo instanceof File) {
+                    const formData = new FormData();
+
+                    Object.entries(tenantData).forEach(([key, value]) => {
+                        if (key !== 'logo' && key !== 'logo_preview') {
+                            if (key === 'address' && typeof value === 'object' && value !== null) {
+                                Object.entries(value).forEach(([addressKey, addressValue]) => {
+                                    formData.append(`address[${addressKey}]`, String(addressValue));
+                                });
+                            } else if (key === 'administrators' && Array.isArray(value)) {
+                                value.forEach((admin, index) => {
+                                    Object.entries(admin).forEach(([adminKey, adminValue]) => {
+                                        formData.append(`administrators[${index}][${adminKey}]`, String(adminValue));
+                                    });
+                                });
+                            } else if (typeof value === 'object' && value !== null) {
+                                formData.append(key, JSON.stringify(value));
+                            } else {
+                                formData.append(key, String(value));
+                            }
+                        }
+                    });
+
+                    formData.append('logo', tenantData.logo);
+
+                    response = await axios.post('/api/tenants', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                } else {
+                    const { logo, logo_preview, ...dataWithoutLogo } = tenantData;
+                    response = await axios.post('/api/tenants', dataWithoutLogo);
+                }
+
                 const newTenant = response.data;
                 setTenants([...tenants, newTenant]);
             }
+
             setIsModalOpen(false);
         } catch (error) {
             console.error('Failed to save tenant', error);
+
+            // Handle validation errors from the backend
+            // if (error.response?.data?.errors) {
+            //     setErrors(error.response.data.errors);
+            // }
         }
     };
 

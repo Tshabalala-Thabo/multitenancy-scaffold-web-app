@@ -24,8 +24,9 @@ export interface Tenant {
         province: string;
         postal_code: string;
     };
-    logo?: string | null;
-    logo_preview: string | null;
+    logo?: File | null;
+    logo_preview?: string | null;
+    logo_url: string | null;
     created_at: string;
     updated_at: string;
     users_count: number;
