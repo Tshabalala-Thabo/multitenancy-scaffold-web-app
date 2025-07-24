@@ -7,6 +7,7 @@ export interface Tenant {
     administrators: {
         id: number;
         name: string;
+        last_name: string;
         email: string;
         password: string;
         isExisting?: boolean
@@ -14,6 +15,7 @@ export interface Tenant {
     users: {
         id: number;
         name: string;
+        last_name: string;
         email: string;
         password: string;
         roles: string[];

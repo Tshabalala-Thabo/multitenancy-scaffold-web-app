@@ -72,6 +72,7 @@ export function TenantModal({
       {
         id: Date.now(),
         name: '',
+        last_name: '',
         email: '',
         password: '',
         isExisting: false, // Track if this is an existing admin
@@ -101,6 +102,7 @@ export function TenantModal({
           ? tenant.users.map(admin => ({
             id: admin.id,
             name: admin.name || '',
+            last_name: admin.last_name || '',
             email: admin.email || '',
             password: '',
             isExisting: true, // Mark existing admins
@@ -109,6 +111,7 @@ export function TenantModal({
             {
               id: Date.now(),
               name: '',
+              last_name: '',
               email: '',
               password: '',
               isExisting: false,
@@ -134,6 +137,7 @@ export function TenantModal({
           {
             id: Date.now(),
             name: '',
+            last_name: '',
             email: '',
             password: '',
             isExisting: false,
@@ -193,6 +197,7 @@ export function TenantModal({
         {
           id: Date.now(),
           name: '',
+          last_name: '',
           email: '',
           password: '',
           isExisting: false, // New admins are not existing
@@ -765,7 +770,7 @@ export function TenantModal({
                                     .value,
                                 )
                               }
-                              placeholder="e.g., John Doe"
+                              placeholder="e.g., John"
                               className={
                                 errors[
                                   `administrators.${admin.id}.name`
@@ -781,6 +786,44 @@ export function TenantModal({
                                   {
                                     errors[
                                     `administrators.${admin.id}.name`
+                                    ]
+                                  }
+                                </p>
+                              )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor={`last_name_${admin.id}`}>
+                              Administrator Last Name *
+                            </Label>
+                            <Input
+                              id={`last_name_${admin.id}`}
+                              value={admin.last_name}
+                              onChange={e =>
+                                handleAdministratorChange(
+                                  admin.id,
+                                  'last_name',
+                                  e.target
+                                    .value,
+                                )
+                              }
+                              placeholder="e.g., Doe"
+                              className={
+                                errors[
+                                  `administrators.${admin.id}.last_name`
+                                ]
+                                  ? 'border-destructive'
+                                  : ''
+                              }
+                            />
+                            {errors[
+                              `administrators.${admin.id}.last_name`
+                            ] && (
+                                <p className="text-sm text-destructive">
+                                  {
+                                    errors[
+                                    `administrators.${admin.id}.last_name`
                                     ]
                                   }
                                 </p>
@@ -826,56 +869,58 @@ export function TenantModal({
                                 </p>
                               )}
                           </div>
-                        </div>
 
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor={`password_${admin.id}`}>
-                            Administrator Password{' '}
-                            {(!isEditing || !admin.isExisting) && '*'}
-                          </Label>
-                          <Input
-                            id={`password_${admin.id}`}
-                            type="password"
-                            value={admin.password}
-                            onChange={e =>
-                              handleAdministratorChange(
-                                admin.id,
-                                'password',
-                                e.target.value,
-                              )
-                            }
-                            placeholder={
-                              admin.isExisting
-                                ? 'Leave blank to keep current password'
-                                : 'Minimum 8 characters'
-                            }
-                            className={
-                              errors[
-                                `administrators.${admin.id}.password`
-                              ]
-                                ? 'border-destructive'
-                                : ''
-                            }
-                          />
-                          {errors[
-                            `administrators.${admin.id}.password`
-                          ] && (
-                              <p className="text-sm text-destructive">
-                                {
-                                  errors[
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor={`password_${admin.id}`}>
+                              Administrator Password{' '}
+                              {(!isEditing || !admin.isExisting) && '*'}
+                            </Label>
+                            <Input
+                              id={`password_${admin.id}`}
+                              type="password"
+                              value={admin.password}
+                              onChange={e =>
+                                handleAdministratorChange(
+                                  admin.id,
+                                  'password',
+                                  e.target.value,
+                                )
+                              }
+                              placeholder={
+                                admin.isExisting
+                                  ? 'Leave blank to keep current password'
+                                  : 'Minimum 8 characters'
+                              }
+                              className={
+                                errors[
                                   `administrators.${admin.id}.password`
-                                  ]
-                                }
+                                ]
+                                  ? 'border-destructive'
+                                  : ''
+                              }
+                            />
+                            {errors[
+                              `administrators.${admin.id}.password`
+                            ] && (
+                                <p className="text-sm text-destructive">
+                                  {
+                                    errors[
+                                    `administrators.${admin.id}.password`
+                                    ]
+                                  }
+                                </p>
+                              )}
+                            {admin.isExisting && (
+                              <p className="text-sm text-muted-foreground">
+                                Leave blank to keep
+                                the current password
                               </p>
                             )}
-                          {admin.isExisting && (
-                            <p className="text-sm text-muted-foreground">
-                              Leave blank to keep
-                              the current password
-                            </p>
-                          )}
+                          </div>
                         </div>
+
+
                       </div>
                     ),
                   )}
