@@ -52,7 +52,18 @@ export function TenantModal({
   onSave,
   tenant,
 }: TenantModalProps) {
-  const [formData, setFormData] = useState<Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'> & { remove_logo: boolean }>({
+  type FormDataType = Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address'> & {
+    remove_logo: boolean;
+    administrators: Array<{
+      id: number;
+      name: string;
+      email: string;
+      password: string;
+      isExisting: boolean;
+    }>;
+  };
+
+  const [formData, setFormData] = useState<FormDataType>({
     name: '',
     slug: '',
     domain: '',
@@ -72,6 +83,7 @@ export function TenantModal({
         name: '',
         email: '',
         password: '',
+        isExisting: false,
       },
     ],
   })
@@ -100,6 +112,7 @@ export function TenantModal({
             name: admin.name || '',
             email: admin.email || '',
             password: '',
+            isExisting: true, // Mark existing admins
           }))
           : [
             {
@@ -107,6 +120,7 @@ export function TenantModal({
               name: '',
               email: '',
               password: '',
+              isExisting: false,
             },
           ],
       })
@@ -131,6 +145,7 @@ export function TenantModal({
             name: '',
             email: '',
             password: '',
+            isExisting: false,
           },
         ],
       })
@@ -189,12 +204,22 @@ export function TenantModal({
           name: '',
           email: '',
           password: '',
+          isExisting: false, // New admins are not existing
         },
       ],
     }))
   }
 
   const removeAdministrator = (id: number) => {
+    // Find the administrator to check if it's existing
+    const adminToRemove = formData.administrators.find(admin => admin.id === id)
+    
+    // Don't allow deletion of existing administrators
+    if (adminToRemove?.isExisting) {
+      return
+    }
+
+    // Only allow removal if there's more than one admin and it's not an existing one
     if (formData.administrators.length > 1) {
       setFormData(prev => ({
         ...prev,
@@ -305,8 +330,8 @@ export function TenantModal({
             'Invalid email format'
         }
 
-        // Password required for new tenants
-        if (!tenant && !admin.password.trim()) {
+        // Password required for new tenants OR new administrators
+        if ((!tenant || !admin.isExisting) && !admin.password.trim()) {
           newErrors[`administrators.${admin.id}.password`] =
             'Password is required'
         }
@@ -327,7 +352,15 @@ export function TenantModal({
     e.preventDefault()
 
     if (validateForm()) {
-      onSave(formData)
+      // Remove the isExisting property before saving
+      const cleanedData = {
+        ...formData,
+        administrators: formData.administrators.map(admin => {
+          const { isExisting, ...cleanAdmin } = admin
+          return cleanAdmin
+        })
+      }
+      onSave(cleanedData)
     }
   }
 
@@ -354,7 +387,7 @@ export function TenantModal({
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="address">Address</TabsTrigger>
               <TabsTrigger value="admin">
-                Administrator
+                Administrators
               </TabsTrigger>
             </TabsList>
 
@@ -694,25 +727,29 @@ export function TenantModal({
                         key={admin.id}
                         className="space-y-4 p-4 border rounded-lg relative">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium">
+                          <h4 className="font-medium flex items-center gap-2">
                             Administrator{' '}
                             {index + 1}
-                          </h4>
-                          {formData.administrators
-                            .length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  removeAdministrator(
-                                    admin.id,
-                                  )
-                                }
-                                className="text-destructive hover:text-destructive">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                            {admin.isExisting && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                Existing
+                              </span>
                             )}
+                          </h4>
+                          {formData.administrators.length > 1 && !admin.isExisting && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                removeAdministrator(
+                                  admin.id,
+                                )
+                              }
+                              className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -799,7 +836,7 @@ export function TenantModal({
                           <Label
                             htmlFor={`password_${admin.id}`}>
                             Administrator Password{' '}
-                            {!isEditing && '*'}
+                            {(!isEditing || !admin.isExisting) && '*'}
                           </Label>
                           <Input
                             id={`password_${admin.id}`}
@@ -813,7 +850,7 @@ export function TenantModal({
                               )
                             }
                             placeholder={
-                              isEditing
+                              admin.isExisting
                                 ? 'Leave blank to keep current password'
                                 : 'Minimum 8 characters'
                             }
@@ -836,7 +873,7 @@ export function TenantModal({
                                 }
                               </p>
                             )}
-                          {isEditing && (
+                          {admin.isExisting && (
                             <p className="text-sm text-muted-foreground">
                               Leave blank to keep
                               the current password
