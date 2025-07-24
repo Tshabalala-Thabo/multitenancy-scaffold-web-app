@@ -29,7 +29,7 @@ interface TenantModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (tenant: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'>) => void
-  tenant?: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'logo_url' | 'address' | 'administrators'>
+  tenant?: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'logo_url' | 'address' | 'administrators'| 'users'>
 }
 
 interface FormErrors {
@@ -92,22 +92,21 @@ export function TenantModal({
           province: tenant.address?.province || '',
           postal_code: tenant.address?.postal_code || '',
         },
-        administrators:
-          tenant.administrators && tenant.administrators.length > 0
-            ? tenant.administrators.map(admin => ({
-              id: admin.id || Date.now() + Math.random(), // Ensure unique ID
-              name: admin.name || '',
-              email: admin.email || '',
-              password: admin.password || '',
-            }))
-            : [
-              {
-                id: Date.now(),
-                name: '',
-                email: '',
-                password: '',
-              },
-            ],
+        administrators: tenant.users.length > 0
+          ? tenant.users.map(admin => ({
+            id: admin.id,
+            name: admin.name || '',
+            email: admin.email || '',
+            password: '',
+          }))
+          : [
+            {
+              id: Date.now(),
+              name: '',
+              email: '',
+              password: '',
+            },
+          ],
       })
     } else {
       setFormData({

@@ -97,11 +97,14 @@ export const useTenant = () => {
 
                     formData.append('logo', tenantData.logo);
 
-                    response = await axios.put(`/api/tenants/${editingTenant.id}`, formData, {
+                    formData.append('_method', 'PUT');
+
+                    response = await axios.post(`/api/tenants/${editingTenant.id}`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
                     });
+
                 } else {
                     const { logo, logo_preview, ...dataWithoutLogo } = tenantData;
                     response = await axios.put(`/api/tenants/${editingTenant.id}`, dataWithoutLogo);
