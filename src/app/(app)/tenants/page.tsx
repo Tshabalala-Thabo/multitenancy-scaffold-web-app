@@ -373,11 +373,11 @@ export default function TenantsPage() {
                                 <CardTitle className="flex items-center gap-2">
                                     <Mail className="h-5 w-5" />
                                     Administrators (
-                                    {selectedTenant.administrators.length})
+                                    {selectedTenant.users?.filter(user => user.roles?.includes('administrator')).length})
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {selectedTenant.administrators.map(
+                                {selectedTenant.users?.filter(user => user.roles?.includes('administrator')).map(
                                     (admin, index) => (
                                         <div
                                             key={admin.id}
@@ -441,7 +441,7 @@ export default function TenantsPage() {
                                         Total Users
                                     </span>
                                     <span className="text-sm font-medium">
-                                        {selectedTenant.users_count}
+                                        {selectedTenant.users.length}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -449,7 +449,7 @@ export default function TenantsPage() {
                                         Created
                                     </span>
                                     <span className="text-sm font-medium">
-                                        {selectedTenant.created_at}
+                                        {formatDate(selectedTenant.created_at)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -457,7 +457,7 @@ export default function TenantsPage() {
                                         Last Updated
                                     </span>
                                     <span className="text-sm font-medium">
-                                        {selectedTenant.updated_at}
+                                        {formatDate(selectedTenant.updated_at)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -465,7 +465,7 @@ export default function TenantsPage() {
                                         Last Activity
                                     </span>
                                     <span className="text-sm font-medium">
-                                        {selectedTenant.last_activity}
+                                        {formatDate(selectedTenant.last_activity)}
                                     </span>
                                 </div>
                             </CardContent>
