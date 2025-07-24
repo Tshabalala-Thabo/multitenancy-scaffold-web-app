@@ -20,14 +20,19 @@ export const useTenant = () => {
     };
 
     useEffect(() => {
+        if (tenants) {
+            console.log("tenants", tenants)
+        }
+    }, [tenants])
+
+    useEffect(() => {
         fetchTenants();
     }, []);
 
-    const filteredTenants = tenants.filter(
-        (tenant) =>
-            tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tenant.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tenant.users.some((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase())),
+    const filteredTenants = tenants.filter((tenant) =>
+        tenant?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant?.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant?.users?.some((user) => user?.email?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const handleCreateTenant = () => {
