@@ -52,12 +52,13 @@ export function TenantModal({
   onSave,
   tenant,
 }: TenantModalProps) {
-  const [formData, setFormData] = useState<Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'>>({
+  const [formData, setFormData] = useState<Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'> & { remove_logo: boolean }>({
     name: '',
     slug: '',
     domain: '',
     logo: null,
     logo_preview: null,
+    remove_logo: false,
     address: {
       street_address: '',
       suburb: '',
@@ -85,6 +86,7 @@ export function TenantModal({
         domain: tenant.domain || '',
         logo: tenant.logo || null,
         logo_preview: tenant.logo_url || tenant.logo_preview || null,
+        remove_logo: false,
         address: {
           street_address: tenant.address?.street_address || '',
           suburb: tenant.address?.suburb || '',
@@ -115,6 +117,7 @@ export function TenantModal({
         domain: '',
         logo: null,
         logo_preview: null,
+        remove_logo: false,
         address: {
           street_address: '',
           suburb: '',
@@ -247,6 +250,7 @@ export function TenantModal({
           ...prev,
           logo: file,
           logo_preview: e.target?.result as string,
+          remove_logo: false
         }))
       }
       reader.readAsDataURL(file)
@@ -263,6 +267,7 @@ export function TenantModal({
       ...prev,
       logo: null,
       logo_preview: null,
+      remove_logo: true
     }))
   }
 
