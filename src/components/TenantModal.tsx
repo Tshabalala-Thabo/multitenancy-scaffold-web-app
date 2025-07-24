@@ -444,14 +444,14 @@ export function TenantModal({
                     <Label htmlFor="logo">Logo</Label>
                     <div className="space-y-4">
                       {formData.logo_preview ? (
-                        <div className="relative w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg overflow-hidden">
+                        <div className="relative w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg overflow-hidden flex items-center justify-center">
                           <img
                             src={
                               formData.logo_preview ||
                               '/placeholder.svg'
                             }
                             alt="Logo preview"
-                            className="w-full h-full object-cover"
+                            className="max-w-full max-h-full object-contain"
                           />
                           <Button
                             type="button"
