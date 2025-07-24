@@ -29,7 +29,7 @@ interface TenantModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (tenant: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'>) => void
-  tenant?: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'logo_url' | 'address' | 'administrators'| 'users'>
+  tenant?: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'logo_url' | 'address' | 'administrators' | 'users'>
 }
 
 interface FormErrors {
@@ -52,18 +52,9 @@ export function TenantModal({
   onSave,
   tenant,
 }: TenantModalProps) {
-  type FormDataType = Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address'> & {
-    remove_logo: boolean;
-    administrators: Array<{
-      id: number;
-      name: string;
-      email: string;
-      password: string;
-      isExisting: boolean;
-    }>;
-  };
-
-  const [formData, setFormData] = useState<FormDataType>({
+  const [formData, setFormData] = useState<Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'> & {
+    remove_logo: boolean,
+  }>({
     name: '',
     slug: '',
     domain: '',
@@ -83,7 +74,7 @@ export function TenantModal({
         name: '',
         email: '',
         password: '',
-        isExisting: false,
+        isExisting: false, // Track if this is an existing admin
       },
     ],
   })
@@ -213,7 +204,7 @@ export function TenantModal({
   const removeAdministrator = (id: number) => {
     // Find the administrator to check if it's existing
     const adminToRemove = formData.administrators.find(admin => admin.id === id)
-    
+
     // Don't allow deletion of existing administrators
     if (adminToRemove?.isExisting) {
       return
@@ -352,12 +343,17 @@ export function TenantModal({
     e.preventDefault()
 
     if (validateForm()) {
-      // Remove the isExisting property before saving
+      // Add is_new flag to help backend distinguish
       const cleanedData = {
         ...formData,
         administrators: formData.administrators.map(admin => {
           const { isExisting, ...cleanAdmin } = admin
-          return cleanAdmin
+          return {
+            ...cleanAdmin,
+            is_new: isExisting ? 1 : 0,
+            // Remove temporary ID for new admins
+            ...(isExisting ? {} : { id: undefined })
+          }
         })
       }
       onSave(cleanedData)

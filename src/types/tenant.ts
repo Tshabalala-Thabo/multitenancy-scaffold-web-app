@@ -9,6 +9,7 @@ export interface Tenant {
         name: string;
         email: string;
         password: string;
+        isExisting?: boolean
     }[];
     users: {
         id: number;
