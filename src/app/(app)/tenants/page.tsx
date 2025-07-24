@@ -123,12 +123,26 @@ export default function TenantsPage() {
                     return (
                       <TableRow key={tenant.id}>
                         <TableCell className="font-medium">
-                          <div>
-                            <div className="font-semibold">
-                              {tenant.name}
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center overflow-hidden relative">
+                              <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/30" />
+                              {tenant.logo_url ? (
+                                <img
+                                  src={tenant.logo_url || '/placeholder.svg'}
+                                  alt={tenant.name}
+                                  className="relative w-8 h-8 object-contain rounded-lg"
+                                />
+                              ) : (
+                                <Building2 className="relative h-5 w-5 text-muted-foreground" />
+                              )}
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {tenant.domain}
+                            <div>
+                              <div className="font-semibold">
+                                {tenant.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {tenant.domain}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
@@ -260,18 +274,16 @@ export default function TenantsPage() {
           {/* Header Section */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                {selectedTenant.logo ? (
+              <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/30" />
+                {selectedTenant.logo_url ? (
                   <img
-                    src={
-                      selectedTenant.logo ||
-                      '/placeholder.svg'
-                    }
+                    src={selectedTenant.logo_url || '/placeholder.svg'}
                     alt={selectedTenant.name}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="relative w-14 h-14 object-contain rounded-lg"
                   />
                 ) : (
-                  <Building2 className="h-8 w-8 text-muted-foreground" />
+                  <Building2 className="relative h-8 w-8 text-muted-foreground" />
                 )}
               </div>
               <div>
