@@ -80,6 +80,10 @@ export function TenantModal({
     ],
   })
 
+  useEffect(() => {
+    console.log("form data", formData)
+  }, [formData])
+
   const [errors, setErrors] = useState<FormErrors>({})
 
   useEffect(() => {
@@ -347,20 +351,23 @@ export function TenantModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log("form administrator before validation", formData.administrators)
+
     if (validateForm()) {
-      // Add is_new flag to help backend distinguish
       const cleanedData = {
         ...formData,
         administrators: formData.administrators.map(admin => {
           const { isExisting, ...cleanAdmin } = admin
           return {
             ...cleanAdmin,
-            is_new: isExisting ? 1 : 0,
-            // Remove temporary ID for new admins
+            is_new: isExisting ? 0 : 1, // For some reason this works when inverted, I don't know why
             ...(isExisting ? {} : { id: undefined })
           }
         })
       }
+
+      console.log("form administrator after validation", cleanedData.administrators)
+
       onSave(cleanedData)
     }
   }

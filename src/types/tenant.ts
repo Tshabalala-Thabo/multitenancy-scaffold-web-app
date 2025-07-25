@@ -17,7 +17,6 @@ export interface Tenant {
         name: string;
         last_name: string;
         email: string;
-        password: string;
         roles: string[];
     }[];
     address: {
