@@ -1,6 +1,7 @@
 import useSWR from 'swr'
 import axios from '@/lib/axios'
 import { useEffect } from 'react'
+import { Role } from '@/types/roles-and-permissions'
 import { useParams, useRouter } from 'next/navigation'
 
 // Types
@@ -8,6 +9,7 @@ export interface User {
     id: number
     name: string
     last_name: string
+    roles: Role[]
     email: string
     email_verified_at: string | null
     created_at: string
