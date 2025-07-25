@@ -4,9 +4,10 @@ import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
 // Types
-interface User {
+export interface User {
     id: number
     name: string
+    last_name: string
     email: string
     email_verified_at: string | null
     created_at: string

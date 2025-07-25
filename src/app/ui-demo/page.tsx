@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { IconExample } from '@/components/ui/IconExample';
 import { AnimationExample } from '@/components/ui/AnimationExample';
 
