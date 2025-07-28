@@ -1,4 +1,4 @@
-export interface Tenant {
+export interface Organisation {
     id: number;
     name: string;
     slug: string;

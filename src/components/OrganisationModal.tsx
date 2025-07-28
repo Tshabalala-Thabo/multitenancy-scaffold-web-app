@@ -23,13 +23,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Building2, User, MapPin, Upload, X, Trash2, Plus } from 'lucide-react'
-import { Tenant } from '@/types/tenant'
+import { Organisation } from '@/types/organisation'
 
-interface TenantModalProps {
+interface OrganisationModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (tenant: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'>) => void
-  tenant?: Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'logo_url' | 'address' | 'administrators' | 'users'>
+  onSave: (organisation: Pick<Organisation, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'>) => void
+  organisation?: Pick<Organisation, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'logo_url' | 'address' | 'administrators' | 'users'>
 }
 
 interface FormErrors {
@@ -46,13 +46,13 @@ interface FormErrors {
   administrators?: string
 }
 
-export function TenantModal({
+export function OrganisationModal({
   isOpen,
   onClose,
   onSave,
-  tenant,
-}: TenantModalProps) {
-  const [formData, setFormData] = useState<Pick<Tenant, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'> & {
+  organisation,
+}: OrganisationModalProps) {
+  const [formData, setFormData] = useState<Pick<Organisation, 'name' | 'slug' | 'domain' | 'logo' | 'logo_preview' | 'address' | 'administrators'> & {
     remove_logo: boolean,
   }>({
     name: '',
@@ -87,23 +87,23 @@ export function TenantModal({
   const [errors, setErrors] = useState<FormErrors>({})
 
   useEffect(() => {
-    if (tenant) {
+    if (organisation) {
       setFormData({
-        name: tenant.name || '',
-        slug: tenant.slug || '',
-        domain: tenant.domain || '',
-        logo: tenant.logo || null,
-        logo_preview: tenant.logo_url || tenant.logo_preview || null,
+        name: organisation.name || '',
+        slug: organisation.slug || '',
+        domain: organisation.domain || '',
+        logo: organisation.logo || null,
+        logo_preview: organisation.logo_url || organisation.logo_preview || null,
         remove_logo: false,
         address: {
-          street_address: tenant.address?.street_address || '',
-          suburb: tenant.address?.suburb || '',
-          city: tenant.address?.city || '',
-          province: tenant.address?.province || '',
-          postal_code: tenant.address?.postal_code || '',
+          street_address: organisation.address?.street_address || '',
+          suburb: organisation.address?.suburb || '',
+          city: organisation.address?.city || '',
+          province: organisation.address?.province || '',
+          postal_code: organisation.address?.postal_code || '',
         },
-        administrators: tenant.users.length > 0
-          ? tenant.users.map(admin => ({
+        administrators: organisation.users.length > 0
+          ? organisation.users.map(admin => ({
             id: admin.id,
             name: admin.name || '',
             last_name: admin.last_name || '',
@@ -150,7 +150,7 @@ export function TenantModal({
       })
     }
     setErrors({})
-  }, [tenant, isOpen])
+  }, [organisation, isOpen])
 
   const handleInputChange = (field: string, value: string) => {
     if (field.startsWith('address.')) {
@@ -187,8 +187,8 @@ export function TenantModal({
 
   const handleNameChange = (value: string) => {
     handleInputChange('name', value)
-    if (!tenant) {
-      // Only auto-generate slug for new tenants
+    if (!organisation) {
+      // Only auto-generate slug for new organisations
       handleInputChange('slug', generateSlug(value))
     }
   }
@@ -330,8 +330,8 @@ export function TenantModal({
             'Invalid email format'
         }
 
-        // Password required for new tenants OR new administrators
-        if ((!tenant || !admin.isExisting) && !admin.password.trim()) {
+        // Password required for new organisations OR new administrators
+        if ((!organisation || !admin.isExisting) && !admin.password.trim()) {
           newErrors[`administrators.${admin.id}.password`] =
             'Password is required'
         }
@@ -372,7 +372,7 @@ export function TenantModal({
     }
   }
 
-  const isEditing = !!tenant
+  const isEditing = !!organisation
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -380,12 +380,12 @@ export function TenantModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            {isEditing ? 'Edit Tenant' : 'Create New Tenant'}
+            {isEditing ? 'Edit Organisation' : 'Create New Organisation'}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Update the tenant information below.'
-              : 'Fill in the details to create a new tenant.'}
+              ? 'Update the organisation information below.'
+              : 'Fill in the details to create a new organisation.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -406,14 +406,14 @@ export function TenantModal({
                     Basic Information
                   </CardTitle>
                   <CardDescription>
-                    Configure the basic tenant settings
+                    Configure the basic organisation settings
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">
-                        Tenant Name *
+                        Organisation Name *
                       </Label>
                       <Input
                         id="name"
@@ -478,7 +478,7 @@ export function TenantModal({
                     />
                     <p className="text-sm text-muted-foreground">
                       Optional: Custom domain for this
-                      tenant
+                      organisation
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -560,7 +560,7 @@ export function TenantModal({
                     Address Information
                   </CardTitle>
                   <CardDescription>
-                    Enter the tenant's business address
+                    Enter the organisation's business address
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -724,7 +724,7 @@ export function TenantModal({
                     Administrator Details
                   </CardTitle>
                   <CardDescription>
-                    Configure the tenant administrator
+                    Configure the organisation administrator
                     accounts (at least one required)
                   </CardDescription>
                 </CardHeader>
@@ -959,7 +959,7 @@ export function TenantModal({
               Cancel
             </Button>
             <Button type="submit">
-              {isEditing ? 'Update Tenant' : 'Create Tenant'}
+              {isEditing ? 'Update Organisation' : 'Create Organisation'}
             </Button>
           </DialogFooter>
         </form>

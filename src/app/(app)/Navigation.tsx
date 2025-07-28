@@ -47,9 +47,9 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                         </div>
                         <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                             <NavLink
-                                href="/tenants"
-                                active={usePathname() === '/tenants'}>
-                                Tenants
+                                href="/organisations"
+                                active={usePathname() === '/organisations'}>
+                                Organisations
                             </NavLink>
                         </div>
                     </div>
