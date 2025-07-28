@@ -50,7 +50,7 @@
             "first_name": "Kagiso",
             "last_name": "Techie",
             "email": "kagiso@byteforge.dev",
-            "password": "SecurePass99!"
+            "password": "password"
         }
     },
     {
@@ -68,7 +68,7 @@
             "first_name": "Naledi",
             "last_name": "Green",
             "email": "naledi@greencore.io",
-            "password": "Green123!"
+            "password": "password"
         }
     },
     {
@@ -86,7 +86,7 @@
             "first_name": "Tshepo",
             "last_name": "Modise",
             "email": "tshepo@orbitlabs.com",
-            "password": "OrbitSecure!"
+            "password": "password"
         }
     }
 ]
