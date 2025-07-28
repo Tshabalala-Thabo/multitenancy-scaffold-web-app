@@ -70,7 +70,7 @@ export function OrganisationModal({
     },
     administrators: [
       {
-        id: Date.now(),
+        id: 1,
         name: '',
         last_name: '',
         email: '',
@@ -80,6 +80,13 @@ export function OrganisationModal({
     ],
   })
 
+  const reindexAdministrators = (administrators: any[]) => {
+    return administrators.map((admin, index) => ({
+      ...admin,
+      id: index + 1, 
+    }))
+  }
+
   useEffect(() => {
     console.log("form data", formData)
   }, [formData])
@@ -88,6 +95,26 @@ export function OrganisationModal({
 
   useEffect(() => {
     if (organisation) {
+      const administrators = organisation.users.length > 0
+        ? organisation.users.map((admin, index) => ({
+          id: index + 1, // Use index-based ID starting from 1
+          name: admin.name || '',
+          last_name: admin.last_name || '',
+          email: admin.email || '',
+          password: '',
+          isExisting: true, // Mark existing admins
+        }))
+        : [
+          {
+            id: 1, 
+            name: '',
+            last_name: '',
+            email: '',
+            password: '',
+            isExisting: false,
+          },
+        ]
+
       setFormData({
         name: organisation.name || '',
         slug: organisation.slug || '',
@@ -102,25 +129,7 @@ export function OrganisationModal({
           province: organisation.address?.province || '',
           postal_code: organisation.address?.postal_code || '',
         },
-        administrators: organisation.users.length > 0
-          ? organisation.users.map(admin => ({
-            id: admin.id,
-            name: admin.name || '',
-            last_name: admin.last_name || '',
-            email: admin.email || '',
-            password: '',
-            isExisting: true, // Mark existing admins
-          }))
-          : [
-            {
-              id: Date.now(),
-              name: '',
-              last_name: '',
-              email: '',
-              password: '',
-              isExisting: false,
-            },
-          ],
+        administrators,
       })
     } else {
       setFormData({
@@ -139,7 +148,7 @@ export function OrganisationModal({
         },
         administrators: [
           {
-            id: Date.now(),
+            id: 1, 
             name: '',
             last_name: '',
             email: '',
@@ -199,7 +208,7 @@ export function OrganisationModal({
       administrators: [
         ...prev.administrators,
         {
-          id: Date.now(),
+          id: prev.administrators.length + 1,
           name: '',
           last_name: '',
           email: '',
@@ -733,6 +742,7 @@ export function OrganisationModal({
                     (admin, index) => (
                       <div
                         key={admin.id}
+                        data-testid="admin-form"
                         className="space-y-4 p-4 border rounded-lg relative">
                         <div className="flex items-center justify-between">
                           <h4 className="font-medium flex items-center gap-2">
@@ -747,6 +757,7 @@ export function OrganisationModal({
                           {formData.administrators.length > 1 && !admin.isExisting && (
                             <Button
                               type="button"
+                              data-testid="remove-admin-button"
                               variant="outline"
                               size="sm"
                               onClick={() =>
