@@ -10,7 +10,7 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-    const { user } = useAuth({ middleware: 'auth' });
+    const { user, userRoles } = useAuth({ middleware: 'auth' });
 
     if (!user) {
         return <Loading />
@@ -18,7 +18,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <Navigation user={user} />
+            <Navigation user={user} userRoles={userRoles.map((role) => role.name)} />
 
             <main>{children}</main>
         </div>
