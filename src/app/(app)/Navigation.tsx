@@ -49,8 +49,8 @@ const Navigation: React.FC<NavigationProps> = ({ user, userRoles }) => {
                         {/* Navigation Links */}
                         <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                             <NavLink
-                                href="/"
-                                active={usePathname() === '/'}>
+                                href="/announcements"
+                                active={usePathname() === '/announcements'}>
                                 Announcements
                             </NavLink>
                         </div>
