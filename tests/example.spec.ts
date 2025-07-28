@@ -104,8 +104,8 @@ test.describe('Organisation Management Single Flow', () => {
     await modal.locator('button:has-text("Create Organisation")').click();
 
     // 10. Verify organisation created and displayed in the list
-    await expect(page.getByText('Test Organisation')).toBeVisible();
-    await expect(page.getByText('admin@test.org')).toBeVisible();
+    await expect(page.getByText('Dawn Capital')).toBeVisible();
+    await expect(page.getByText('dawncapital.co.za')).toBeVisible();
   });
 });
 
