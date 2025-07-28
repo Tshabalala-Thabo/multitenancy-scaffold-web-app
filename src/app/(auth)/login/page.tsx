@@ -58,6 +58,7 @@ const Login = (): React.ReactElement => {
 
                     <Input
                         id="email"
+                        data-testid="email-input"
                         type="email"
                         value={email}
                         className="block mt-1 w-full"
@@ -75,6 +76,7 @@ const Login = (): React.ReactElement => {
 
                     <Input
                         id="password"
+                        data-testid="password-input"
                         type="password"
                         value={password}
                         className="block mt-1 w-full"
@@ -96,6 +98,7 @@ const Login = (): React.ReactElement => {
                         className="inline-flex items-center">
                         <input
                             id="remember_me"
+                            data-testid="remember-checkbox"
                             type="checkbox"
                             name="remember"
                             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
@@ -117,7 +120,7 @@ const Login = (): React.ReactElement => {
                         Forgot your password?
                     </Link>
 
-                    <Button className="ml-3">Login</Button>
+                    <Button className="ml-3" data-testid="login-button">Login</Button>
                 </div>
             </form>
         </>
