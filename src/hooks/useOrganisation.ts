@@ -1,84 +1,84 @@
 import { useState, useEffect } from 'react'
-import { Tenant } from '@/types/tenant'
+import { Organisation } from '@/types/organisation'
 import axios from '@/lib/axios'
 
-export const useTenant = () => {
-    const [tenants, setTenants] = useState<Tenant[]>([])
+export const useOrganisation = () => {
+    const [organisations, setOrganisations] = useState<Organisation[]>([])
     const [searchTerm, setSearchTerm] = useState('')
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [editingTenant, setEditingTenant] = useState<Tenant | null>(null)
+    const [editingOrganisation, setEditingOrganisation] = useState<Organisation | null>(null)
     const [currentView, setCurrentView] = useState('list')
-    const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
+    const [selectedOrganisation, setSelectedOrganisation] = useState<Organisation | null>(null)
 
-    const fetchTenants = async () => {
+    const fetchOrganisations = async () => {
         try {
             const response = await axios.get('/api/tenants')
-            setTenants(response.data)
+            setOrganisations(response.data)
         } catch (error) {
-            console.error('Failed to fetch tenants', error)
+            console.error('Failed to fetch organisations', error)
         }
     }
 
     useEffect(() => {
-        if (tenants) {
-            console.log('tenants', tenants)
+        if (organisations) {
+            console.log('organisations', organisations)
         }
-    }, [tenants])
+    }, [organisations])
 
     useEffect(() => {
-        fetchTenants()
+        fetchOrganisations()
     }, [])
 
-    const filteredTenants = tenants.filter(
-        tenant =>
-            tenant?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tenant?.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tenant?.users?.some(user =>
+    const filteredOrganisations = organisations.filter(
+        organisation =>
+            organisation?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            organisation?.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            organisation?.users?.some(user =>
                 user?.email?.toLowerCase().includes(searchTerm.toLowerCase()),
             ),
     )
 
-    const handleCreateTenant = () => {
-        setEditingTenant(null)
+    const handleCreateOrganisation = () => {
+        setEditingOrganisation(null)
         setIsModalOpen(true)
     }
 
-    const handleEditTenant = (tenant: Tenant) => {
-        setEditingTenant(tenant)
+    const handleEditOrganisation = (organisation: Organisation) => {
+        setEditingOrganisation(organisation)
         setIsModalOpen(true)
     }
 
-    const handleViewTenant = (tenant: Tenant) => {
-        setSelectedTenant(tenant)
+    const handleViewOrganisation = (organisation: Organisation) => {
+        setSelectedOrganisation(organisation)
         setCurrentView('detail')
     }
 
     const handleBackToList = () => {
         setCurrentView('list')
-        setSelectedTenant(null)
+        setSelectedOrganisation(null)
     }
 
-    const handleDeleteTenant = async (tenantId: number) => {
+    const handleDeleteOrganisation = async (organisationId: number) => {
         try {
-            await axios.delete(`/api/tenants/${tenantId}`)
-            setTenants(tenants.filter(t => t.id !== tenantId))
-            if (selectedTenant && selectedTenant.id === tenantId) {
+            await axios.delete(`/api/tenants/${organisationId}`)
+            setOrganisations(organisations.filter(t => t.id !== organisationId))
+            if (selectedOrganisation && selectedOrganisation.id === organisationId) {
                 handleBackToList()
             }
         } catch (error) {
-            console.error('Failed to delete tenant', error)
+            console.error('Failed to delete organisation', error)
         }
     }
 
-    const handleSaveTenant = async (tenantData: Partial<Tenant>) => {
+    const handleSaveOrganisation = async (organisationData: Partial<Organisation>) => {
         try {
             let response
 
-            if (editingTenant) {
-                if (tenantData.logo instanceof File) {
+            if (editingOrganisation) {
+                if (organisationData.logo instanceof File) {
                     const formData = new FormData()
 
-                    Object.entries(tenantData).forEach(([key, value]) => {
+                    Object.entries(organisationData).forEach(([key, value]) => {
                         if (key !== 'logo' && key !== 'logo_preview') {
                             if (
                                 key === 'address' &&
@@ -118,10 +118,10 @@ export const useTenant = () => {
                         }
                     })
 
-                    formData.append('logo', tenantData.logo)
+                    formData.append('logo', organisationData.logo)
                     if (
-                        'remove_logo' in tenantData &&
-                        tenantData.remove_logo === true
+                        'remove_logo' in organisationData &&
+                        organisationData.remove_logo === true
                     ) {
                         formData.append('remove_logo', '1')
                     } else {
@@ -131,7 +131,7 @@ export const useTenant = () => {
                     formData.append('_method', 'PUT')
 
                     response = await axios.post(
-                        `/api/tenants/${editingTenant.id}`,
+                        `/api/tenants/${editingOrganisation.id}`,
                         formData,
                         {
                             headers: {
@@ -141,26 +141,26 @@ export const useTenant = () => {
                     )
                 } else {
                     const { logo, logo_preview, ...dataWithoutLogo } =
-                        tenantData
+                        organisationData
                     response = await axios.put(
-                        `/api/tenants/${editingTenant.id}`,
+                        `/api/tenants/${editingOrganisation.id}`,
                         dataWithoutLogo,
                     )
                 }
 
-                const updatedTenant = response.data
-                const updatedTenants = tenants.map(t =>
-                    t.id === editingTenant.id ? updatedTenant : t,
+                const updatedOrganisation = response.data
+                const updatedOrganisations = organisations.map(t =>
+                    t.id === editingOrganisation.id ? updatedOrganisation : t,
                 )
-                setTenants(updatedTenants)
-                if (selectedTenant && selectedTenant.id === editingTenant.id) {
-                    setSelectedTenant(updatedTenant)
+                setOrganisations(updatedOrganisations)
+                if (selectedOrganisation && selectedOrganisation.id === editingOrganisation.id) {
+                    setSelectedOrganisation(updatedOrganisation)
                 }
             } else {
-                if (tenantData.logo instanceof File) {
+                if (organisationData.logo instanceof File) {
                     const formData = new FormData()
 
-                    Object.entries(tenantData).forEach(([key, value]) => {
+                    Object.entries(organisationData).forEach(([key, value]) => {
                         if (key !== 'logo' && key !== 'logo_preview') {
                             if (
                                 key === 'address' &&
@@ -200,7 +200,7 @@ export const useTenant = () => {
                         }
                     })
 
-                    formData.append('logo', tenantData.logo)
+                    formData.append('logo', organisationData.logo)
 
                     response = await axios.post('/api/tenants', formData, {
                         headers: {
@@ -209,17 +209,17 @@ export const useTenant = () => {
                     })
                 } else {
                     const { logo, logo_preview, ...dataWithoutLogo } =
-                        tenantData
+                        organisationData
                     response = await axios.post('/api/tenants', dataWithoutLogo)
                 }
 
-                const newTenant = response.data
-                setTenants([...tenants, newTenant])
+                const newOrganisation = response.data
+                setOrganisations([...organisations, newOrganisation])
             }
 
             setIsModalOpen(false)
         } catch (error) {
-            console.error('Failed to save tenant', error)
+            console.error('Failed to save organisation', error)
 
             // Handle validation errors from the backend
             // if (error.response?.data?.errors) {
@@ -229,20 +229,20 @@ export const useTenant = () => {
     }
 
     return {
-        tenants,
+        organisations,
         searchTerm,
         setSearchTerm,
         isModalOpen,
         setIsModalOpen,
-        editingTenant,
+        editingOrganisation,
         currentView,
-        selectedTenant,
-        filteredTenants,
-        handleCreateTenant,
-        handleEditTenant,
-        handleViewTenant,
+        selectedOrganisation,
+        filteredOrganisations,
+        handleCreateOrganisation,
+        handleEditOrganisation,
+        handleViewOrganisation,
         handleBackToList,
-        handleDeleteTenant,
-        handleSaveTenant,
+        handleDeleteOrganisation,
+        handleSaveOrganisation,
     }
 }

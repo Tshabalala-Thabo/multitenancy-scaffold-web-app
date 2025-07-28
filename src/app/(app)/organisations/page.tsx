@@ -1,6 +1,6 @@
 'use client'
 
-import { useTenant } from '@/hooks/useTenant'
+import { useOrganisation } from '@/hooks/useOrganisation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -40,45 +40,45 @@ import {
   Calendar,
   Globe,
 } from 'lucide-react'
-import { TenantModal } from '@/components/TenantModal'
+import { OrganisationModal } from '@/components/OrganisationModal'
 import { formatDate } from '@/utils/dateFormatter'
 
-export default function TenantsPage() {
+export default function OrganisationsPage() {
   const {
     searchTerm,
     setSearchTerm,
     isModalOpen,
     setIsModalOpen,
-    editingTenant,
+    editingOrganisation,
     currentView,
-    selectedTenant,
-    filteredTenants,
-    handleCreateTenant,
-    handleEditTenant,
-    handleViewTenant,
+    selectedOrganisation,
+    filteredOrganisations,
+    handleCreateOrganisation,
+    handleEditOrganisation,
+    handleViewOrganisation,
     handleBackToList,
-    handleDeleteTenant,
-    handleSaveTenant,
-  } = useTenant()
+    handleDeleteOrganisation,
+    handleSaveOrganisation,
+  } = useOrganisation()
 
   // List View Component
   const ListView = () => (
     <>
-      <Header title="Tenants" />
+      <Header title="Organisations" />
       <div className="flex flex-1 flex-col gap-4 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Tenant Management</CardTitle>
+                <CardTitle>Organisation Management</CardTitle>
                 <CardDescription>
-                  Manage all tenants in your multi-tenant
+                  Manage all organisations in your multi-tenant
                   application
                 </CardDescription>
               </div>
-              <Button onClick={handleCreateTenant}>
+              <Button onClick={handleCreateOrganisation}>
                 <Plus className="mr-2 h-4 w-4" />
-                Create Tenant
+                Create Organisation
               </Button>
             </div>
           </CardHeader>
@@ -87,7 +87,7 @@ export default function TenantsPage() {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search tenants..."
+                  placeholder="Search organisations..."
                   value={searchTerm}
                   onChange={e =>
                     setSearchTerm(e.target.value)
@@ -112,8 +112,8 @@ export default function TenantsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTenants?.map(tenant => {
-                    const adminUsers = tenant.users?.filter(
+                  {filteredOrganisations?.map(organisation => {
+                    const adminUsers = organisation.users?.filter(
                       user =>
                         user.roles?.includes(
                           'administrator',
@@ -121,15 +121,15 @@ export default function TenantsPage() {
                     )
 
                     return (
-                      <TableRow key={tenant.id}>
+                      <TableRow key={organisation.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center overflow-hidden relative">
                               <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/30" />
-                              {tenant.logo_url ? (
+                              {organisation.logo_url ? (
                                 <img
-                                  src={tenant.logo_url || '/placeholder.svg'}
-                                  alt={tenant.name}
+                                  src={organisation.logo_url || '/placeholder.svg'}
+                                  alt={organisation.name}
                                   className="relative w-8 h-8 object-contain rounded-lg"
                                 />
                               ) : (
@@ -138,10 +138,10 @@ export default function TenantsPage() {
                             </div>
                             <div>
                               <div className="font-semibold">
-                                {tenant.name}
+                                {organisation.name}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {tenant.domain}
+                                {organisation.domain}
                               </div>
                             </div>
                           </div>
@@ -186,21 +186,21 @@ export default function TenantsPage() {
                         <TableCell>
                           <Badge
                             variant={
-                              tenant.status ===
+                              organisation.status ===
                                 'active'
                                 ? 'default'
                                 : 'secondary'
                             }>
-                            {tenant.status ||
+                            {organisation.status ||
                               'not available'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {tenant.users?.length}
+                          {organisation.users?.length}
                         </TableCell>
                         <TableCell>
                           {formatDate(
-                            tenant.created_at,
+                            organisation.created_at,
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -216,8 +216,8 @@ export default function TenantsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleViewTenant(
-                                    tenant,
+                                  handleViewOrganisation(
+                                    organisation,
                                   )
                                 }>
                                 <Eye className="mr-2 h-4 w-4" />
@@ -225,8 +225,8 @@ export default function TenantsPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleEditTenant(
-                                    tenant,
+                                  handleEditOrganisation(
+                                    organisation,
                                   )
                                 }>
                                 <Edit className="mr-2 h-4 w-4" />
@@ -234,8 +234,8 @@ export default function TenantsPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleDeleteTenant(
-                                    tenant.id,
+                                  handleDeleteOrganisation(
+                                    organisation.id,
                                   )
                                 }
                                 className="text-destructive">
@@ -259,15 +259,15 @@ export default function TenantsPage() {
 
   // Detail View Component
   const DetailView = () => {
-    if (!selectedTenant) return null
+    if (!selectedOrganisation) return null
 
     return (
       <>
         <Header
-          title="Tenant Details"
+          title="Organisation Details"
           showBackButton
           onBackClick={handleBackToList}
-          backButtonText="Back to Tenants"
+          backButtonText="Back to Organisations"
         />
 
         <div className="flex flex-1 flex-col gap-6 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -276,10 +276,10 @@ export default function TenantsPage() {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/30" />
-                {selectedTenant.logo_url ? (
+                {selectedOrganisation.logo_url ? (
                   <img
-                    src={selectedTenant.logo_url || '/placeholder.svg'}
-                    alt={selectedTenant.name}
+                    src={selectedOrganisation.logo_url || '/placeholder.svg'}
+                    alt={selectedOrganisation.name}
                     className="relative w-14 h-14 object-contain rounded-lg"
                   />
                 ) : (
@@ -288,33 +288,33 @@ export default function TenantsPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  {selectedTenant.name}
+                  {selectedOrganisation.name}
                 </h2>
                 <p className="text-muted-foreground">
-                  @{selectedTenant.slug}
+                  @{selectedOrganisation.slug}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge
                     variant={
-                      selectedTenant.status === 'active'
+                      selectedOrganisation.status === 'active'
                         ? 'default'
                         : 'secondary'
                     }>
-                    {selectedTenant.status}
+                    {selectedOrganisation.status}
                   </Badge>
-                  {selectedTenant.domain && (
+                  {selectedOrganisation.domain && (
                     <Badge variant="outline">
                       <Globe className="w-3 h-3 mr-1" />
-                      {selectedTenant.domain}
+                      {selectedOrganisation.domain}
                     </Badge>
                   )}
                 </div>
               </div>
             </div>
             <Button
-              onClick={() => handleEditTenant(selectedTenant)}>
+              onClick={() => handleEditOrganisation(selectedOrganisation)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Tenant
+              Edit Organisation
             </Button>
           </div>
 
@@ -333,7 +333,7 @@ export default function TenantsPage() {
                     Name
                   </label>
                   <p className="text-sm">
-                    {selectedTenant.name}
+                    {selectedOrganisation.name}
                   </p>
                 </div>
                 <div>
@@ -341,7 +341,7 @@ export default function TenantsPage() {
                     Slug
                   </label>
                   <p className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                    {selectedTenant.slug}
+                    {selectedOrganisation.slug}
                   </p>
                 </div>
                 <div>
@@ -349,9 +349,9 @@ export default function TenantsPage() {
                     Domain
                   </label>
                   <p className="text-sm">
-                    {selectedTenant.domain ? (
+                    {selectedOrganisation.domain ? (
                       <code className="bg-muted px-2 py-1 rounded">
-                        {selectedTenant.domain}
+                        {selectedOrganisation.domain}
                       </code>
                     ) : (
                       <span className="text-muted-foreground">
@@ -367,12 +367,12 @@ export default function TenantsPage() {
                   <div className="mt-1">
                     <Badge
                       variant={
-                        selectedTenant.status ===
+                        selectedOrganisation.status ===
                           'active'
                           ? 'default'
                           : 'secondary'
                       }>
-                      {selectedTenant.status}
+                      {selectedOrganisation.status}
                     </Badge>
                   </div>
                 </div>
@@ -385,11 +385,11 @@ export default function TenantsPage() {
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="h-5 w-5" />
                   Administrators (
-                  {selectedTenant.users?.filter(user => user.roles?.includes('administrator')).length})
+                  {selectedOrganisation.users?.filter(user => user.roles?.includes('administrator')).length})
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {selectedTenant.users?.filter(user => user.roles?.includes('administrator')).map(
+                {selectedOrganisation.users?.filter(user => user.roles?.includes('administrator')).map(
                   (admin, index) => (
                     <div
                       key={admin.id}
@@ -425,18 +425,18 @@ export default function TenantsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {selectedTenant.address && (
+                {selectedOrganisation.address && (
                   <>
                     <p className="text-sm">
-                      {selectedTenant.address.street_address}
+                      {selectedOrganisation.address.street_address}
                     </p>
                     <p className="text-sm">
-                      {selectedTenant.address.suburb}
+                      {selectedOrganisation.address.suburb}
                     </p>
                     <p className="text-sm">
-                      {selectedTenant.address.city},{' '}
-                      {selectedTenant.address.province}{' '}
-                      {selectedTenant.address.postal_code}
+                      {selectedOrganisation.address.city},{' '}
+                      {selectedOrganisation.address.province}{' '}
+                      {selectedOrganisation.address.postal_code}
                     </p>
                   </>
                 )}
@@ -457,7 +457,7 @@ export default function TenantsPage() {
                     Total Users
                   </span>
                   <span className="text-sm font-medium">
-                    {selectedTenant.users.length || 'N/A'}
+                    {selectedOrganisation.users.length || 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -465,7 +465,7 @@ export default function TenantsPage() {
                     Created
                   </span>
                   <span className="text-sm font-medium">
-                    {formatDate(selectedTenant.created_at)}
+                    {formatDate(selectedOrganisation.created_at)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -473,7 +473,7 @@ export default function TenantsPage() {
                     Last Updated
                   </span>
                   <span className="text-sm font-medium">
-                    {formatDate(selectedTenant.updated_at)}
+                    {formatDate(selectedOrganisation.updated_at)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -481,7 +481,7 @@ export default function TenantsPage() {
                     Last Activity
                   </span>
                   <span className="text-sm font-medium">
-                    {formatDate(selectedTenant.last_activity)}
+                    {formatDate(selectedOrganisation.last_activity)}
                   </span>
                 </div>
               </CardContent>
@@ -496,7 +496,7 @@ export default function TenantsPage() {
                 Recent Activity
               </CardTitle>
               <CardDescription>
-                Latest activities for this tenant
+                Latest activities for this organisation
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -505,7 +505,7 @@ export default function TenantsPage() {
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">
-                      Tenant updated
+                      Organisation updated
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Domain configuration changed • 2
@@ -521,7 +521,7 @@ export default function TenantsPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       User count increased to{' '}
-                      {selectedTenant.users_count} • 3
+                      {selectedOrganisation.users_count} • 3
                       days ago
                     </p>
                   </div>
@@ -550,11 +550,11 @@ export default function TenantsPage() {
     <main>
       {currentView === 'list' ? <ListView /> : <DetailView />}
 
-      <TenantModal
+      <OrganisationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveTenant}
-        tenant={editingTenant || undefined}
+        onSave={handleSaveOrganisation}
+        organisation={editingOrganisation || undefined}
       />
     </main>
   )
