@@ -61,6 +61,7 @@ interface ResendEmailVerificationProps {
 
 interface UseAuthReturn {
     user: User | undefined
+    userRoles: Role[]
     register: (props: RegisterProps) => Promise<void>
     login: (props: LoginProps) => Promise<void>
     forgotPassword: (props: ForgotPasswordProps) => Promise<void>
@@ -140,9 +141,9 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: AuthProps = {})
         setStatus(null)
 
         try {
-            const response = await axios.post('/reset-password', { 
-                token: params.token, 
-                ...props 
+            const response = await axios.post('/reset-password', {
+                token: params.token,
+                ...props
             })
             router.push('/login?reset=' + btoa(response.data.status))
         } catch (error: any) {
@@ -172,18 +173,19 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: AuthProps = {})
 
         if (middleware === 'auth' && (user && !user.email_verified_at))
             router.push('/verify-email')
-        
+
         if (
             window.location.pathname === '/verify-email' &&
             user?.email_verified_at
         )
             router.push(redirectIfAuthenticated || '/dashboard')
-            
+
         if (middleware === 'auth' && error) logout()
     }, [user, error, middleware, redirectIfAuthenticated, router])
 
     return {
         user,
+        userRoles: user?.roles || [],
         register,
         login,
         forgotPassword,
