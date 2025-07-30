@@ -20,6 +20,7 @@ const Page = (): React.ReactElement => {
     })
 
     const [name, setName] = useState('')
+    const [lastName, setLastName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [passwordConfirmation, setPasswordConfirmation] = useState('')
@@ -30,6 +31,7 @@ const Page = (): React.ReactElement => {
 
         register({
             name,
+            last_name: lastName,
             email,
             password,
             password_confirmation: passwordConfirmation,
@@ -41,71 +43,80 @@ const Page = (): React.ReactElement => {
         <form onSubmit={submitForm}>
             {/* Name */}
             <div>
-                <Label className="" htmlFor="name">Name</Label>
-
+                <Label htmlFor="name">Name</Label>
                 <Input
                     id="name"
                     type="text"
                     value={name}
+                    data-testid="input-name"
                     className="block mt-1 w-full"
                     onChange={(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value)}
                     required
                     autoFocus
                 />
-
                 <InputError messages={errors.name || []} className="mt-2" />
+            </div>
+
+            {/* Last Name */}
+            <div className="mt-4">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    data-testid="input-last-name"
+                    className="block mt-1 w-full"
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => setLastName(event.target.value)}
+                    required
+                />
+                <InputError messages={errors.last_name || []} className="mt-2" />
             </div>
 
             {/* Email Address */}
             <div className="mt-4">
-                <Label className="" htmlFor="email">Email</Label>
-
+                <Label htmlFor="email">Email</Label>
                 <Input
                     id="email"
                     type="email"
                     value={email}
+                    data-testid="input-email"
                     className="block mt-1 w-full"
                     onChange={(event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
                     required
                 />
-
                 <InputError messages={errors.email as string[] || []} className="mt-2" />
             </div>
 
             {/* Password */}
             <div className="mt-4">
-                <Label className="" htmlFor="password">Password</Label>
-
+                <Label htmlFor="password">Password</Label>
                 <Input
                     id="password"
                     type="password"
                     value={password}
+                    data-testid="input-password"
                     className="block mt-1 w-full"
                     onChange={(event: ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
                     required
                     autoComplete="new-password"
                 />
-
                 <InputError messages={errors.password || []} className="mt-2" />
             </div>
 
             {/* Confirm Password */}
             <div className="mt-4">
-                <Label className="" htmlFor="passwordConfirmation">
-                    Confirm Password
-                </Label>
-
+                <Label htmlFor="passwordConfirmation">Confirm Password</Label>
                 <Input
                     id="passwordConfirmation"
                     type="password"
                     value={passwordConfirmation}
+                    data-testid="input-password-confirmation"
                     className="block mt-1 w-full"
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
                         setPasswordConfirmation(event.target.value)
                     }
                     required
                 />
-
                 <InputError
                     messages={errors.password_confirmation || []}
                     className="mt-2"
@@ -118,8 +129,7 @@ const Page = (): React.ReactElement => {
                     className="underline text-sm text-gray-600 hover:text-gray-900">
                     Already registered?
                 </Link>
-
-                <Button className="ml-4">Register</Button>
+                <Button className="ml-4" data-testid="register-button">Register</Button>
             </div>
         </form>
     )

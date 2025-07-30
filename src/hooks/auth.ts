@@ -28,6 +28,7 @@ interface AuthProps {
 interface RegisterProps {
     setErrors: (errors: ValidationErrors) => void
     name: string
+    last_name: string
     email: string
     password: string
     password_confirmation: string
