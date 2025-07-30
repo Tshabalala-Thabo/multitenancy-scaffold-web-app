@@ -6,8 +6,8 @@ test('should register John Nobela', async ({ page }) => {
   await page.getByTestId('input-name').fill('John')
   await page.getByTestId('input-last-name').fill('Nobela')
   await page.getByTestId('input-email').fill('john@gmail.com')
-  await page.getByTestId('input-password').fill('password123')
-  await page.getByTestId('input-password-confirmation').fill('password123')
+  await page.getByTestId('input-password').fill('password')
+  await page.getByTestId('input-password-confirmation').fill('password')
 
   await page.getByTestId('register-button').click()
 
