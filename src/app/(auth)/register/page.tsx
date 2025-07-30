@@ -58,7 +58,7 @@ const Page = (): React.ReactElement => {
             </div>
 
             {/* Last Name */}
-            <div>
+            <div className="mt-4">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                     id="lastName"
@@ -68,9 +68,8 @@ const Page = (): React.ReactElement => {
                     className="block mt-1 w-full"
                     onChange={(event: ChangeEvent<HTMLInputElement>) => setLastName(event.target.value)}
                     required
-                    autoFocus
                 />
-                <InputError messages={errors.lastName || []} className="mt-2" />
+                <InputError messages={errors.last_name || []} className="mt-2" />
             </div>
 
             {/* Email Address */}
