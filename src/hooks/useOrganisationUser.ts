@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import axios from '@/lib/axios'
 import { useRouter } from 'next/navigation'
-//import { useToast } from '@/components/ui/use-toast'
-
+import { useToast } from './use-toast'
 export const useOrganisationUser = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    //const { toast } = useToast()
+    const { toast } = useToast()
     const router = useRouter()
 
     const joinOrganisation = async (organisationId: string) => {
@@ -16,11 +15,11 @@ export const useOrganisationUser = () => {
         try {
             const response = await axios.post(`/api/tenants/${organisationId}/join`)
 
-            // toast({
-            //     title: 'Success!',
-            //     description: 'You have successfully joined the organization.',
-            //     variant: 'default',
-            // })
+            toast({
+                title: 'Success!',
+                description: 'You have successfully joined the organization.',
+                variant: 'default',
+            })
 
             // Refresh the page to show the updated organization list
             router.refresh()
@@ -29,17 +28,15 @@ export const useOrganisationUser = () => {
         } catch (err: any) {
             const errorMessage =
                 err.response?.data?.message || 'Failed to join organization'
-            setError(errorMessage)
 
-            // toast({
-            //     title: 'Error',
-            //     description: errorMessage,
-            //     variant: 'destructive',
-            // })
+            toast({
+                title: 'Error',
+                description: errorMessage,
+                variant: 'destructive',
+            })
 
-            console.log(errorMessage)
 
-            throw new Error(errorMessage)
+            //throw new Error(errorMessage)
         } finally {
             setIsLoading(false)
         }
