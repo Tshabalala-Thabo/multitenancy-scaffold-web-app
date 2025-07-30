@@ -25,6 +25,7 @@ import { Separator } from '@/components/ui/separator'
 import { Organisation } from '@/types/organisation'
 import Header from '@/components/Header'
 import { useEffect } from 'react'
+import { useOrganisationUser } from '@/hooks/useOrganisationUser'
 
 interface UserOrganisationListProps {
     organisations: Organisation[]
@@ -37,8 +38,15 @@ export const UserOrganisationView = ({
     const [selectedOrganization, setSelectedOrganization] =
         useState<Organisation | null>(null)
 
-    const handleJoinOrganization = (orgId: number) => {
-        //
+    const { joinOrganisation, isLoading } = useOrganisationUser()
+
+    const handleJoinOrganization = async (orgId: number) => {
+        try {
+            await joinOrganisation(orgId.toString())
+        } catch (error) {
+            // Error is already handled in the hook
+            console.error('Error joining organization:', error)
+        }
     }
 
     const handleLeaveOrganization = (orgId: number) => {
@@ -141,7 +149,7 @@ export const UserOrganisationView = ({
                                         className="flex-1">
                                         View Details
                                     </Button>
-                                    <Button size="sm" variant={'outline'}>
+                                    <Button size="sm" onClick={() => handleJoinOrganization(org.id)} variant={'outline'}>
                                         Join
                                     </Button>
                                 </div>
