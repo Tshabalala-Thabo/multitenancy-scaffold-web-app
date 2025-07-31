@@ -25,11 +25,10 @@ export default function OrganisationsPage() {
         handleSaveOrganisation,
     } = useOrganisation()
 
-    const { userRoles } = useAuth()
-
+    const { user } = useAuth()
     return (
         <main>
-            {userRoles.some(role => role.name === 'super_admin') ? (
+            {user?.roles.some(role => role.name === 'super_admin') ? (
                 currentView === 'list' ? (
                     <OrganisationListView
                         searchTerm={searchTerm}

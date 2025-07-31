@@ -11,7 +11,7 @@ import {
 import { Building2, MapPin, Users, Calendar, Plus } from 'lucide-react'
 import { formatDate } from '@/utils/dateFormatter'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
     Dialog,
@@ -94,7 +94,7 @@ export const UserOrganisationView = ({
                                             <AvatarImage
                                                 src={org.logo_url || undefined}
                                                 alt={org.name}
-                                                className="rounded-lg"
+                                                className="rounded-lg object-contain"
                                             />
                                             <AvatarFallback className="rounded-lg">
                                                 <Building2 className="h-6 w-6" />
@@ -182,15 +182,12 @@ export const UserOrganisationView = ({
                                 <div className="flex items-center gap-4">
                                     <Avatar className="h-16 w-16 rounded-lg">
                                         <AvatarImage
-                                            src={
-                                                selectedOrganization.logo_url ||
-                                                undefined
-                                            }
+                                            src={selectedOrganization.logo_url || undefined}
                                             alt={selectedOrganization.name}
-                                            className="rounded-lg"
+                                            className="rounded-lg object-contain"
                                         />
                                         <AvatarFallback className="rounded-lg">
-                                            <Building2 className="h-8 w-8" />
+                                            <Building2 className="h-6 w-6" />
                                         </AvatarFallback>
                                     </Avatar>
                                     <div>
@@ -328,8 +325,9 @@ export const UserOrganisationView = ({
                                             Administrators
                                         </h3>
                                         <div className="space-y-2">
-                                            {selectedOrganization.administrators?.map(
-                                                admin => (
+                                            {selectedOrganization.users
+                                                .filter(user => user.roles.includes('administrator'))
+                                                .map(admin => (
                                                     <div
                                                         key={admin.id}
                                                         className="flex items-center gap-3 p-3 border rounded-lg">
@@ -344,9 +342,7 @@ export const UserOrganisationView = ({
                                                         <div className="flex-1">
                                                             <p className="font-medium">
                                                                 {admin.name}{' '}
-                                                                {
-                                                                    admin.last_name
-                                                                }
+                                                                {admin.last_name}
                                                             </p>
                                                             <p className="text-sm text-muted-foreground">
                                                                 {admin.email}
@@ -356,8 +352,7 @@ export const UserOrganisationView = ({
                                                             Admin
                                                         </Badge>
                                                     </div>
-                                                ),
-                                            )}
+                                                ))}
                                         </div>
                                     </div>
 
@@ -368,8 +363,9 @@ export const UserOrganisationView = ({
                                             Members
                                         </h3>
                                         <div className="space-y-2">
-                                            {selectedOrganization.users?.map(
-                                                user => (
+                                            {selectedOrganization.users
+                                                ?.filter(user => !user.roles.includes('administrator'))
+                                                .map(user => (
                                                     <div
                                                         key={user.id}
                                                         className="flex items-center gap-3 p-3 border rounded-lg">
@@ -394,9 +390,7 @@ export const UserOrganisationView = ({
                                                             {user.roles.map(
                                                                 role => (
                                                                     <Badge
-                                                                        key={
-                                                                            role
-                                                                        }
+                                                                        key={role}
                                                                         variant="outline"
                                                                         className="text-xs">
                                                                         {role.replace(
@@ -408,8 +402,7 @@ export const UserOrganisationView = ({
                                                             )}
                                                         </div>
                                                     </div>
-                                                ),
-                                            )}
+                                                ))}
                                         </div>
                                     </div>
                                 </TabsContent>

@@ -34,9 +34,6 @@ export const useOrganisationUser = () => {
                 description: errorMessage,
                 variant: 'destructive',
             })
-
-
-            //throw new Error(errorMessage)
         } finally {
             setIsLoading(false)
         }
