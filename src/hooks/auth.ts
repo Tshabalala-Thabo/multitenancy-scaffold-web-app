@@ -1,6 +1,7 @@
 import useSWR from 'swr'
 import axios from '@/lib/axios'
 import { useEffect } from 'react'
+import { Organisation } from '@/types/organisation'
 import { Role } from '@/types/roles-and-permissions'
 import { useParams, useRouter } from 'next/navigation'
 
@@ -10,6 +11,8 @@ export interface User {
     name: string
     last_name: string
     roles: Role[]
+    tenant_id?: number
+    organisations: Pick<Organisation, 'id' | 'name' | 'logo_url'>[]
     email: string
     email_verified_at: string | null
     created_at: string
@@ -62,7 +65,6 @@ interface ResendEmailVerificationProps {
 
 interface UseAuthReturn {
     user: User | undefined
-    userRoles: Role[]
     register: (props: RegisterProps) => Promise<void>
     login: (props: LoginProps) => Promise<void>
     forgotPassword: (props: ForgotPasswordProps) => Promise<void>
@@ -186,7 +188,6 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: AuthProps = {})
 
     return {
         user,
-        userRoles: user?.roles || [],
         register,
         login,
         forgotPassword,
