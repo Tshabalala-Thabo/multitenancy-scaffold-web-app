@@ -957,7 +957,7 @@ export function OrganisationForm({
         </Tabs>
 
         <FormDialogFooter>
-          <div className="flex w-full justify-between">
+          <div className="flex w-full justify-end space-x-2">
             <Button
               type="button"
               variant="outline"

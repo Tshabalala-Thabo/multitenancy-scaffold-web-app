@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils"
 export interface FormDialogProps {
   isOpen: boolean
   onClose: () => void
-  title: string
-  description?: string
+  title: React.ReactNode
+  description?: React.ReactNode
   children: React.ReactNode
   footer?: React.ReactNode
   className?: string

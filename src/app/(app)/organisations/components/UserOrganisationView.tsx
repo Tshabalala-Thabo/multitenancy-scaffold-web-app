@@ -26,6 +26,7 @@ import { Organisation } from '@/types/organisation'
 import Header from '@/components/Header'
 import { useEffect } from 'react'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
+import { useAuth } from '@/hooks/auth'
 
 interface UserOrganisationListProps {
     organisations: Organisation[]
@@ -39,6 +40,7 @@ export const UserOrganisationView = ({
         useState<Organisation | null>(null)
 
     const { joinOrganisation, isLoading } = useOrganisationUser()
+    const { user } = useAuth({})
 
     const handleJoinOrganization = async (orgId: number) => {
         try {
@@ -149,9 +151,11 @@ export const UserOrganisationView = ({
                                         className="flex-1">
                                         View Details
                                     </Button>
-                                    <Button size="sm" onClick={() => handleJoinOrganization(org.id)} variant={'outline'}>
-                                        Join
-                                    </Button>
+                                    {!user?.organisations?.some(userOrg => userOrg.id === org.id) && (
+                                        <Button size="sm" onClick={() => handleJoinOrganization(org.id)} variant={'outline'}>
+                                            Join
+                                        </Button>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
