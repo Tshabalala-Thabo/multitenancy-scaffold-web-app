@@ -1,16 +1,7 @@
 'use client'
 
 import type React from 'react'
-
 import { useState, useEffect } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { Building2, User, MapPin, Upload, X, Trash2, Plus } from 'lucide-react'
 import { Organisation } from '@/types/organisation'
+import { ReusableDialog, FormDialogFooter } from '@/components/ReusableDialog'
 
 interface OrganisationModalProps {
   isOpen: boolean
@@ -46,7 +38,7 @@ interface FormErrors {
   administrators?: string
 }
 
-export function OrganisationModal({
+export function OrganisationForm({
   isOpen,
   onClose,
   onSave,
@@ -83,7 +75,7 @@ export function OrganisationModal({
   const reindexAdministrators = (administrators: any[]) => {
     return administrators.map((admin, index) => ({
       ...admin,
-      id: index + 1, 
+      id: index + 1,
     }))
   }
 
@@ -106,7 +98,7 @@ export function OrganisationModal({
         }))
         : [
           {
-            id: 1, 
+            id: 1,
             name: '',
             last_name: '',
             email: '',
@@ -148,7 +140,7 @@ export function OrganisationModal({
         },
         administrators: [
           {
-            id: 1, 
+            id: 1,
             name: '',
             last_name: '',
             email: '',
@@ -384,22 +376,24 @@ export function OrganisationModal({
   const isEditing = !!organisation
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            {isEditing ? 'Edit Organisation' : 'Create New Organisation'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? 'Update the organisation information below.'
-              : 'Fill in the details to create a new organisation.'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="basic" className="w-full">
+    <ReusableDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2">
+          <Building2 className="h-5 w-5" />
+          {isEditing ? 'Edit Organisation' : 'Create New Organisation'}
+        </div>
+      }
+      description={
+        isEditing
+          ? 'Update the organisation information below.'
+          : 'Fill in the details to create a new organisation.'
+      }
+      maxWidth="4xl"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs defaultValue="basic" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="address">Address</TabsTrigger>
@@ -960,21 +954,23 @@ export function OrganisationModal({
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
+        </Tabs>
 
-          <DialogFooter className="mt-6">
+        <FormDialogFooter>
+          <div className="flex w-full justify-between">
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}>
+              onClick={onClose}
+            >
               Cancel
             </Button>
             <Button type="submit">
               {isEditing ? 'Update Organisation' : 'Create Organisation'}
             </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </FormDialogFooter>
+      </form>
+    </ReusableDialog>
   )
 }

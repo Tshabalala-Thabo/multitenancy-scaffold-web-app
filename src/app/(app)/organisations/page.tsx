@@ -1,7 +1,7 @@
 'use client'
 
 import { useOrganisation } from '@/hooks/useOrganisation'
-import { OrganisationModal } from '@/components/OrganisationModal'
+import { OrganisationForm } from '@/components/OrganisationForm'
 import { OrganisationDetailView } from './components/OrganisationDetailView'
 import { OrganisationListView } from './components/OrganisationListView'
 import { UserOrganisationView } from './components/UserOrganisationView'
@@ -53,7 +53,7 @@ export default function OrganisationsPage() {
                 />
             )}
 
-            <OrganisationModal
+            <OrganisationForm
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveOrganisation}
