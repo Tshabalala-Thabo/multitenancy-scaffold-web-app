@@ -66,9 +66,9 @@ const OrganisationCardSkeleton = () => (
 )
 
 export const UserOrganisationView = ({
-                                         organisations,
-                                         isLoading = false,
-                                     }: UserOrganisationListProps & { isLoading?: boolean }) => {
+    organisations,
+    isLoading = false,
+}: UserOrganisationListProps & { isLoading?: boolean }) => {
     const [selectedOrganization, setSelectedOrganization] = useState<Organisation | null>(null)
 
     // Track which specific organization is being joined
@@ -172,22 +172,22 @@ export const UserOrganisationView = ({
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <Users className="h-4 w-4" />
                                                 <span>
-                                                {org.users.length} member(s)
-                                            </span>
+                                                    {org.users.length} member(s)
+                                                </span>
                                             </div>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <MapPin className="h-4 w-4" />
                                                 <span>
-                                                {org.address.city},{' '}
+                                                    {org.address.city},{' '}
                                                     {org.address.province}
-                                            </span>
+                                                </span>
                                             </div>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <Calendar className="h-4 w-4" />
                                                 <span>
-                                                Last active{' '}
+                                                    Last active{' '}
                                                     {formatDate(org.last_activity)}
-                                            </span>
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="flex gap-2 mt-4">
@@ -563,12 +563,12 @@ export const UserOrganisationView = ({
                                 <Button
                                     onClick={() =>
                                         handleJoinOrganization(
-                                            selectedOrganization?.id,
+                                            selectedOrganization.id,
                                         )
                                     }
-                                    disabled={joiningOrgId === selectedOrganization?.id}
+                                    disabled={joiningOrgId === selectedOrganization.id}
                                     variant="default">
-                                    {joiningOrgId === selectedOrganization?.id ? "Joining..." : 'Join'}
+                                    {joiningOrgId === selectedOrganization.id ? "Joining..." : 'Join'}
                                 </Button>
                             )}
                         </div>

@@ -3,7 +3,6 @@ import axios from '@/lib/axios'
 import { useRouter } from 'next/navigation'
 import { useToast } from './use-toast'
 import { useAuth } from './auth'
-import { AxiosError } from 'axios'
 
 export const useOrganisationUser = () => {
     const [isLoading, setIsLoading] = useState(false)
