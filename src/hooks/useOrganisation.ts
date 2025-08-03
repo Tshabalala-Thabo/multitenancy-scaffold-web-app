@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Organisation } from '@/types/organisation'
 import axios from '@/lib/axios'
+import { useToast } from './use-toast'
 
 export const useOrganisation = () => {
     const [organisations, setOrganisations] = useState<Organisation[]>([])
@@ -9,13 +10,25 @@ export const useOrganisation = () => {
     const [editingOrganisation, setEditingOrganisation] = useState<Organisation | null>(null)
     const [currentView, setCurrentView] = useState('list')
     const [selectedOrganisation, setSelectedOrganisation] = useState<Organisation | null>(null)
+    const [isLoading, setIsLoading] = useState(false)
+    //const [error, setError] = useState<string | null>(null)
+    const { toast } = useToast()
+
 
     const fetchOrganisations = async () => {
+        setIsLoading(true)
         try {
             const response = await axios.get('/api/tenants')
             setOrganisations(response.data)
         } catch (error) {
-            console.error('Failed to fetch organisations', error)
+            console.error('Failed to fetch organisations:', error)
+            toast({
+                title: 'Error',
+                description: error.response?.data?.message || 'Failed to fetch organisations',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -244,5 +257,6 @@ export const useOrganisation = () => {
         handleBackToList,
         handleDeleteOrganisation,
         handleSaveOrganisation,
+        isLoading,
     }
 }

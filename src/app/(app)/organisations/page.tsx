@@ -23,6 +23,7 @@ export default function OrganisationsPage() {
         handleBackToList,
         handleDeleteOrganisation,
         handleSaveOrganisation,
+        isLoading
     } = useOrganisation()
 
     const { user } = useAuth()
@@ -38,7 +39,6 @@ export default function OrganisationsPage() {
                         handleEditOrganisation={handleEditOrganisation}
                         handleViewOrganisation={handleViewOrganisation}
                         handleDeleteOrganisation={handleDeleteOrganisation}
-
                     />
                 ) : (
                     <OrganisationDetailView
@@ -50,6 +50,7 @@ export default function OrganisationsPage() {
             ) : (
                 <UserOrganisationView
                     organisations={filteredOrganisations}
+                    isLoading={isLoading}
                 />
             )}
 

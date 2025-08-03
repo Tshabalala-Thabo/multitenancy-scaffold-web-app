@@ -195,7 +195,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                     className="flex items-center space-x-2 group">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-blue-600 group-hover:text-blue-700 transition-colors duration-200" />
                                     <span className="hidden sm:block font-semibold text-gray-900 text-lg">
-                                        Dashboard
+                                        Multitenancy Scaffold
                                     </span>
                                 </Link>
                             )}
