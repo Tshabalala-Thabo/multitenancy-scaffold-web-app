@@ -11,7 +11,7 @@ import {
 import { Building2, MapPin, Users, Calendar, Plus } from 'lucide-react'
 import { formatDate } from '@/utils/dateFormatter'
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'

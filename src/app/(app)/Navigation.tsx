@@ -18,9 +18,10 @@ import {
 import { useAuth } from '@/hooks/auth'
 import { usePathname } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { ChevronsUpDown, ChevronDown, Search, User, Settings, LogOut } from 'lucide-react'
 import { User as UserType } from '@/hooks/auth'
+import { useRouter } from 'next/navigation'
 
 interface NavigationProps {
     user: UserType
@@ -43,6 +44,7 @@ const getUserRole = (user: UserType, tenantId: number): string => {
 
 const Navigation: React.FC<NavigationProps> = ({ user }) => {
     const { logout } = useAuth()
+    const router = useRouter()
     console.log('user', user)
     const userRoles = user.roles.map(role => role.name)
 
@@ -265,7 +267,9 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                         <User className="w-4 h-4" />
                                         <span>Profile</span>
                                     </DropdownButton>
-                                    <DropdownButton className="flex items-center space-x-2 w-full px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors duration-150">
+                                    <DropdownButton
+                                        onClick={() => router.push('/settings')}
+                                        className="flex items-center space-x-2 w-full px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors duration-150">
                                         <Settings className="w-4 h-4" />
                                         <span>Settings</span>
                                     </DropdownButton>

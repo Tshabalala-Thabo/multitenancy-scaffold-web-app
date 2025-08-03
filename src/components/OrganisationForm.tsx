@@ -72,13 +72,6 @@ export function OrganisationForm({
     ],
   })
 
-  const reindexAdministrators = (administrators: any[]) => {
-    return administrators.map((admin, index) => ({
-      ...admin,
-      id: index + 1,
-    }))
-  }
-
   useEffect(() => {
     console.log("form data", formData)
   }, [formData])
@@ -318,7 +311,7 @@ export function OrganisationForm({
     if (formData.administrators.length === 0) {
       newErrors.administrators = 'At least one administrator is required'
     } else {
-      formData.administrators.forEach((admin, index) => {
+      formData.administrators.forEach((admin) => {
         if (!admin.name.trim()) {
           newErrors[`administrators.${admin.id}.name`] =
             'Administrator name is required'
