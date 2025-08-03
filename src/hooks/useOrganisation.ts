@@ -1,21 +1,37 @@
 import { useState, useEffect } from 'react'
 import { Organisation } from '@/types/organisation'
 import axios from '@/lib/axios'
+import { useToast } from './use-toast'
 
 export const useOrganisation = () => {
     const [organisations, setOrganisations] = useState<Organisation[]>([])
     const [searchTerm, setSearchTerm] = useState('')
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [editingOrganisation, setEditingOrganisation] = useState<Organisation | null>(null)
+    const [editingOrganisation, setEditingOrganisation] =
+        useState<Organisation | null>(null)
     const [currentView, setCurrentView] = useState('list')
-    const [selectedOrganisation, setSelectedOrganisation] = useState<Organisation | null>(null)
+    const [selectedOrganisation, setSelectedOrganisation] =
+        useState<Organisation | null>(null)
+    const [isLoading, setIsLoading] = useState(false)
+    //const [error, setError] = useState<string | null>(null)
+    const { toast } = useToast()
 
     const fetchOrganisations = async () => {
+        setIsLoading(true)
         try {
             const response = await axios.get('/api/tenants')
             setOrganisations(response.data)
         } catch (error) {
-            console.error('Failed to fetch organisations', error)
+            console.error('Failed to fetch organisations:', error)
+            toast({
+                title: 'Error',
+                description:
+                    error.response?.data?.message ||
+                    'Failed to fetch organisations',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -31,8 +47,12 @@ export const useOrganisation = () => {
 
     const filteredOrganisations = organisations.filter(
         organisation =>
-            organisation?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            organisation?.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            organisation?.name
+                ?.toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+            organisation?.slug
+                ?.toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
             organisation?.users?.some(user =>
                 user?.email?.toLowerCase().includes(searchTerm.toLowerCase()),
             ),
@@ -62,7 +82,10 @@ export const useOrganisation = () => {
         try {
             await axios.delete(`/api/tenants/${organisationId}`)
             setOrganisations(organisations.filter(t => t.id !== organisationId))
-            if (selectedOrganisation && selectedOrganisation.id === organisationId) {
+            if (
+                selectedOrganisation &&
+                selectedOrganisation.id === organisationId
+            ) {
                 handleBackToList()
             }
         } catch (error) {
@@ -70,7 +93,9 @@ export const useOrganisation = () => {
         }
     }
 
-    const handleSaveOrganisation = async (organisationData: Partial<Organisation>) => {
+    const handleSaveOrganisation = async (
+        organisationData: Partial<Organisation>,
+    ) => {
         try {
             let response
 
@@ -141,7 +166,6 @@ export const useOrganisation = () => {
                     )
                 } else {
                     const { logo, logo_preview, ...dataWithoutLogo } =
-                        organisationData
                     response = await axios.put(
                         `/api/tenants/${editingOrganisation.id}`,
                         dataWithoutLogo,
@@ -153,7 +177,10 @@ export const useOrganisation = () => {
                     t.id === editingOrganisation.id ? updatedOrganisation : t,
                 )
                 setOrganisations(updatedOrganisations)
-                if (selectedOrganisation && selectedOrganisation.id === editingOrganisation.id) {
+                if (
+                    selectedOrganisation &&
+                    selectedOrganisation.id === editingOrganisation.id
+                ) {
                     setSelectedOrganisation(updatedOrganisation)
                 }
             } else {
@@ -209,7 +236,6 @@ export const useOrganisation = () => {
                     })
                 } else {
                     const { logo, logo_preview, ...dataWithoutLogo } =
-                        organisationData
                     response = await axios.post('/api/tenants', dataWithoutLogo)
                 }
 
@@ -244,5 +270,6 @@ export const useOrganisation = () => {
         handleBackToList,
         handleDeleteOrganisation,
         handleSaveOrganisation,
+        isLoading,
     }
 }

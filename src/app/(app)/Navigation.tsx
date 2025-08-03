@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, Suspense } from 'react'
 import ApplicationLogo from '@/components/ApplicationLogo'
 import Dropdown from '@/components/Dropdown'
 import Link from 'next/link'
@@ -18,9 +18,11 @@ import {
 import { useAuth } from '@/hooks/auth'
 import { usePathname } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { ChevronsUpDown, ChevronDown, Search, User, Settings, LogOut } from 'lucide-react'
 import { User as UserType } from '@/hooks/auth'
+import { useRouter } from 'next/navigation'
+import useOrganisationUser from '@/hooks/useOrganisationUser'
 
 interface NavigationProps {
     user: UserType
@@ -43,7 +45,9 @@ const getUserRole = (user: UserType, tenantId: number): string => {
 
 const Navigation: React.FC<NavigationProps> = ({ user }) => {
     const { logout } = useAuth()
-    console.log('user', user)
+    const router = useRouter()
+    const { switchOrganisation } = useOrganisationUser()
+    const [isSwitching, setIsSwitching] = useState<boolean>(false)
     const userRoles = user.roles.map(role => role.name)
 
     // Transform user organizations to match the dropdown format
@@ -67,10 +71,21 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
 
     const [open, setOpen] = useState<boolean>(false)
 
-    const handleOrgChange = (org: (typeof organizations)[0]) => {
-        // Handle organization change logic here
-        // You might want to call an API to update the user's current tenant
-        console.log('Switching to organization:', org)
+    const handleOrgChange = async (org: (typeof organizations)[0]) => {
+        if (isSwitching || org.id === user.tenant_id) return
+        
+        try {
+            setIsSwitching(true)
+            const success = await switchOrganisation(org.id)
+            if (success) {
+                // Refresh the page to update the UI with the new organization
+                window.location.reload()
+            }
+        } catch (error) {
+            console.error('Failed to switch organization:', error)
+        } finally {
+            setIsSwitching(false)
+        }
     }
 
     const handleCreateOrganization = () => {
@@ -152,7 +167,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                                                 {org.name}
                                                             </div>
                                                             <div className="text-sm text-gray-500 capitalize">
-                                                                {org.role}
+                                                                {isSwitching && selectedOrg?.id === org.id ? 'Switching...' : org.role}
                                                             </div>
                                                         </div>
                                                         {selectedOrg?.id === org.id && (
@@ -195,7 +210,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                     className="flex items-center space-x-2 group">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-blue-600 group-hover:text-blue-700 transition-colors duration-200" />
                                     <span className="hidden sm:block font-semibold text-gray-900 text-lg">
-                                        Dashboard
+                                        Multitenancy Scaffold
                                     </span>
                                 </Link>
                             )}
@@ -265,7 +280,9 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                         <User className="w-4 h-4" />
                                         <span>Profile</span>
                                     </DropdownButton>
-                                    <DropdownButton className="flex items-center space-x-2 w-full px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors duration-150">
+                                    <DropdownButton
+                                        onClick={() => router.push('/settings')}
+                                        className="flex items-center space-x-2 w-full px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors duration-150">
                                         <Settings className="w-4 h-4" />
                                         <span>Settings</span>
                                     </DropdownButton>

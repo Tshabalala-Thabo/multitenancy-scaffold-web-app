@@ -1,7 +1,7 @@
 'use client'
 
 import { useOrganisation } from '@/hooks/useOrganisation'
-import { OrganisationModal } from '@/components/OrganisationModal'
+import { OrganisationForm } from '@/components/OrganisationForm'
 import { OrganisationDetailView } from './components/OrganisationDetailView'
 import { OrganisationListView } from './components/OrganisationListView'
 import { UserOrganisationView } from './components/UserOrganisationView'
@@ -23,6 +23,7 @@ export default function OrganisationsPage() {
         handleBackToList,
         handleDeleteOrganisation,
         handleSaveOrganisation,
+        isLoading
     } = useOrganisation()
 
     const { user } = useAuth()
@@ -38,7 +39,6 @@ export default function OrganisationsPage() {
                         handleEditOrganisation={handleEditOrganisation}
                         handleViewOrganisation={handleViewOrganisation}
                         handleDeleteOrganisation={handleDeleteOrganisation}
-
                     />
                 ) : (
                     <OrganisationDetailView
@@ -50,10 +50,11 @@ export default function OrganisationsPage() {
             ) : (
                 <UserOrganisationView
                     organisations={filteredOrganisations}
+                    isLoading={isLoading}
                 />
             )}
 
-            <OrganisationModal
+            <OrganisationForm
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveOrganisation}
