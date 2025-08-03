@@ -71,6 +71,7 @@ interface UseAuthReturn {
     resetPassword: (props: ResetPasswordProps) => Promise<void>
     resendEmailVerification: (props: ResendEmailVerificationProps) => void
     logout: () => Promise<void>
+    mutate: () => Promise<any>
 }
 
 export const useAuth = ({ middleware, redirectIfAuthenticated }: AuthProps = {}): UseAuthReturn => {
@@ -194,5 +195,6 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: AuthProps = {})
         resetPassword,
         resendEmailVerification,
         logout,
+        mutate
     }
 }

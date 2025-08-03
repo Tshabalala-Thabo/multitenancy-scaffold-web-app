@@ -2,11 +2,14 @@ import { useState } from 'react'
 import axios from '@/lib/axios'
 import { useRouter } from 'next/navigation'
 import { useToast } from './use-toast'
+import { useAuth } from './auth'
+
 export const useOrganisationUser = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const { toast } = useToast()
     const router = useRouter()
+    const { mutate } = useAuth()
 
     const joinOrganisation = async (organisationId: string) => {
         setIsLoading(true)
@@ -22,6 +25,7 @@ export const useOrganisationUser = () => {
             })
 
             // Refresh the page to show the updated organization list
+            await mutate()
             router.refresh()
 
             return response.data
