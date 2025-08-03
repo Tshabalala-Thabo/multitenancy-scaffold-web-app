@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, Suspense } from 'react'
 import ApplicationLogo from '@/components/ApplicationLogo'
 import Dropdown from '@/components/Dropdown'
 import Link from 'next/link'
@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronsUpDown, ChevronDown, Search, User, Settings, LogOut } from 'lucide-react'
 import { User as UserType } from '@/hooks/auth'
 import { useRouter } from 'next/navigation'
+import useOrganisationUser from '@/hooks/useOrganisationUser'
 
 interface NavigationProps {
     user: UserType
@@ -45,7 +46,8 @@ const getUserRole = (user: UserType, tenantId: number): string => {
 const Navigation: React.FC<NavigationProps> = ({ user }) => {
     const { logout } = useAuth()
     const router = useRouter()
-    console.log('user', user)
+    const { switchOrganisation } = useOrganisationUser()
+    const [isSwitching, setIsSwitching] = useState<boolean>(false)
     const userRoles = user.roles.map(role => role.name)
 
     // Transform user organizations to match the dropdown format
@@ -69,10 +71,21 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
 
     const [open, setOpen] = useState<boolean>(false)
 
-    const handleOrgChange = (org: (typeof organizations)[0]) => {
-        // Handle organization change logic here
-        // You might want to call an API to update the user's current tenant
-        console.log('Switching to organization:', org)
+    const handleOrgChange = async (org: (typeof organizations)[0]) => {
+        if (isSwitching || org.id === user.tenant_id) return
+        
+        try {
+            setIsSwitching(true)
+            const success = await switchOrganisation(org.id)
+            if (success) {
+                // Refresh the page to update the UI with the new organization
+                window.location.reload()
+            }
+        } catch (error) {
+            console.error('Failed to switch organization:', error)
+        } finally {
+            setIsSwitching(false)
+        }
     }
 
     const handleCreateOrganization = () => {
@@ -154,7 +167,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                                                 {org.name}
                                                             </div>
                                                             <div className="text-sm text-gray-500 capitalize">
-                                                                {org.role}
+                                                                {isSwitching && selectedOrg?.id === org.id ? 'Switching...' : org.role}
                                                             </div>
                                                         </div>
                                                         {selectedOrg?.id === org.id && (

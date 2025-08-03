@@ -3,6 +3,7 @@ import axios from '@/lib/axios'
 import { useRouter } from 'next/navigation'
 import { useToast } from './use-toast'
 import { useAuth } from './auth'
+import { AxiosError } from 'axios'
 
 export const useOrganisationUser = () => {
     const [isLoading, setIsLoading] = useState(false)
@@ -59,9 +60,42 @@ export const useOrganisationUser = () => {
         }
     }
 
+    const leaveOrganisation = async (organisationId: number) => {
+        setIsLoading(true)
+        setError(null)
+
+        try {
+            const response = await axios.post(`/api/tenants/${organisationId}/leave`)
+
+            toast({
+                title: 'Success!',
+                description: 'You have successfully left the organization.',
+                variant: 'default',
+            })
+
+            // Refresh the page to show the updated organization list
+            await mutate()
+            router.refresh()
+
+            return response.data
+        } catch (err: any) {
+            const errorMessage =
+                err.response?.data?.message || 'Failed to leave organization'
+
+            toast({
+                title: 'Error',
+                description: errorMessage,
+                variant: 'destructive',
+            })
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return {
         joinOrganisation,
         switchOrganisation,
+        leaveOrganisation,
         isLoading,
         error,
     }

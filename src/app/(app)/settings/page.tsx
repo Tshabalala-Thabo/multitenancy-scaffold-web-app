@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 import { Button } from '@/components/ui/button'
@@ -39,15 +39,21 @@ export default function MyOrganizations(
     const [activeOrganizationId, setActiveOrganizationId] = useState<number | null>(user?.tenant_id || null)
     const [leavingOrgId, setLeavingOrgId] = useState<number | null>(null)
     const [switchingOrgId, setSwitchingOrgId] = useState<number | null>(null)
-    const { switchOrganisation } = useOrganisationUser()
+    const { switchOrganisation, leaveOrganisation } = useOrganisationUser()
+
+    useEffect(() => {
+        setActiveOrganizationId(user?.tenant_id || null)
+    }, [user?.tenant_id])
 
     const handleLeaveOrganization = async (orgId: number) => {
         setLeavingOrgId(orgId)
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        console.log(`Simulating leaving organization ${orgId}.`)
-        // In a real application, you would update the state or refetch data.
-        setLeavingOrgId(null)
+        try {
+            await leaveOrganisation(orgId)
+        } catch (error) {
+            console.error('Failed to leave organization:', error)
+        }finally {
+            setLeavingOrgId(null)
+        }
     }
 
     const handleSwitchToOrganization = async (orgId: number) => {
