@@ -66,22 +66,25 @@ const OrganisationCardSkeleton = () => (
 )
 
 export const UserOrganisationView = ({
-    organisations,
-    isLoading = false,
-}: UserOrganisationListProps & { isLoading?: boolean }) => {
-    // if (!organisation) return null
-    const [selectedOrganization, setSelectedOrganization] =
-        useState<Organisation | null>(null)
+                                         organisations,
+                                         isLoading = false,
+                                     }: UserOrganisationListProps & { isLoading?: boolean }) => {
+    const [selectedOrganization, setSelectedOrganization] = useState<Organisation | null>(null)
 
-    const { joinOrganisation, isLoading: isJoining } = useOrganisationUser()
+    // Track which specific organization is being joined
+    const [joiningOrgId, setJoiningOrgId] = useState<number | null>(null)
+
+    const { joinOrganisation } = useOrganisationUser()
     const { user } = useAuth({})
 
     const handleJoinOrganization = async (orgId: number) => {
         try {
+            setJoiningOrgId(orgId) // Set the specific org being joined
             await joinOrganisation(orgId.toString())
         } catch (error) {
-            // Error is already handled in the hook
             console.error('Error joining organization:', error)
+        } finally {
+            setJoiningOrgId(null) // Clear the joining state
         }
     }
 
@@ -126,92 +129,97 @@ export const UserOrganisationView = ({
                         ))
                     ) : (
                         // Show actual organization cards when not loading
-                        organisations.map(org => (
-                            <Card
-                                key={org.id}
-                                className="hover:shadow-lg transition-shadow cursor-pointer flex flex-col h-full">
-                            <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-12 w-12 rounded-lg">
-                                            <AvatarImage
-                                                src={org.logo_url || undefined}
-                                                alt={org.name}
-                                                className="rounded-lg object-contain"
-                                            />
-                                            <AvatarFallback className="rounded-lg">
-                                                <Building2 className="h-6 w-6" />
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <CardTitle className="text-lg">
-                                                {org.name}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {org.domain || 'No domain'}
-                                            </CardDescription>
+                        organisations.map(org => {
+                            const isCurrentlyJoining = joiningOrgId === org.id
+                            const isUserMember = user?.organisations?.some(
+                                userOrg => userOrg.id === org.id,
+                            )
+
+                            return (
+                                <Card
+                                    key={org.id}
+                                    className="hover:shadow-lg transition-shadow cursor-pointer flex flex-col h-full">
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-12 w-12 rounded-lg">
+                                                    <AvatarImage
+                                                        src={org.logo_url || undefined}
+                                                        alt={org.name}
+                                                        className="rounded-lg object-contain"
+                                                    />
+                                                    <AvatarFallback className="rounded-lg">
+                                                        <Building2 className="h-6 w-6" />
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <CardTitle className="text-lg">
+                                                        {org.name}
+                                                    </CardTitle>
+                                                    <CardDescription>
+                                                        {org.domain || 'No domain'}
+                                                    </CardDescription>
+                                                </div>
+                                            </div>
+                                            <Badge
+                                                className={`${getStatusColor(org.status)} whitespace-nowrap`}>
+                                                {org.status || 'No status'}
+                                            </Badge>
                                         </div>
-                                    </div>
-                                    <Badge
-                                        className={`${getStatusColor(org.status)} whitespace-nowrap`}>
-                                        {org.status || 'No status'}
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex flex-col flex-1">
-                                <div className="space-y-2 flex-1">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Users className="h-4 w-4" />
-                                        <span>
-                                            {org.users.length} member(s)
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <MapPin className="h-4 w-4" />
-                                        <span>
-                                            {org.address.city},{' '}
-                                            {org.address.province}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Calendar className="h-4 w-4" />
-                                        <span>
-                                            Last active{' '}
-                                            {formatDate(org.last_activity)}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2 mt-4">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            console.log(
-                                                'Setting selected org:',
-                                                org,
-                                            )
-                                            setSelectedOrganization(org)
-                                        }}
-                                        className="flex-1">
-                                        View Details
-                                    </Button>
-                                    {!user?.organisations?.some(
-                                        userOrg => userOrg.id === org.id,
-                                    ) && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() =>
-                                                handleJoinOrganization(org.id)
-                                            }
-                                            disabled={isJoining}
-                                            variant="default">
-                                            {isJoining ? "Joining..." : 'Join'}
-                                        </Button>
-                                    )}
-                                </div>
-                            </CardContent>
-                            </Card>
-                        ))
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col flex-1">
+                                        <div className="space-y-2 flex-1">
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Users className="h-4 w-4" />
+                                                <span>
+                                                {org.users.length} member(s)
+                                            </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <MapPin className="h-4 w-4" />
+                                                <span>
+                                                {org.address.city},{' '}
+                                                    {org.address.province}
+                                            </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Calendar className="h-4 w-4" />
+                                                <span>
+                                                Last active{' '}
+                                                    {formatDate(org.last_activity)}
+                                            </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 mt-4">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    console.log(
+                                                        'Setting selected org:',
+                                                        org,
+                                                    )
+                                                    setSelectedOrganization(org)
+                                                }}
+                                                className="flex-1">
+                                                View Details
+                                            </Button>
+                                            {!isUserMember && (
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleJoinOrganization(org.id)
+                                                    }
+                                                    disabled={isCurrentlyJoining}
+                                                    variant="default">
+                                                    {isCurrentlyJoining ? "Joining..." : 'Join'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )
+                        })
                     )}
                 </div>
 
@@ -558,9 +566,9 @@ export const UserOrganisationView = ({
                                             selectedOrganization?.id,
                                         )
                                     }
-                                    disabled={isJoining}
+                                    disabled={joiningOrgId === selectedOrganization?.id}
                                     variant="default">
-                                    {isJoining ? "Joining..." : 'Join'}
+                                    {joiningOrgId === selectedOrganization?.id ? "Joining..." : 'Join'}
                                 </Button>
                             )}
                         </div>
