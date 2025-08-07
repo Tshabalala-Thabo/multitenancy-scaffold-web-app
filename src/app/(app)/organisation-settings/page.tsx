@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BasicInfoForm } from './components/BasicInfoForm'
 import { AccessControlForm } from './components/AccessControlForm'
 import Header from '@/components/Header'
@@ -190,6 +190,7 @@ async function getAllPermissions(): Promise<Permission[]> {
         },
     ]
 }
+
 async function getOrganizationSettings(
     orgId: number,
 ): Promise<OrganizationSettings> {
@@ -245,69 +246,80 @@ async function getOrganizationSettings(
 }
 
 export default async function OrganizationSettingsPage({
-    params,
-}: {
+                                                           params,
+                                                       }: {
     params: { orgId: string }
 }) {
     const orgId = Number.parseInt(params.orgId)
     const settings = await getOrganizationSettings(orgId)
     const roles = await getOrgRoles(orgId)
     const allPermissions = await getAllPermissions()
+
     return (
         <div>
             <Header title="Organization Settings" />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Basic Information</CardTitle>
-                        <CardDescription>
-                            Manage your organization's name, logo, and contact
-                            details.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <BasicInfoForm
-                            orgId={orgId}
-                            initialSettings={settings}
-                        />
-                    </CardContent>
-                </Card>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+                <Tabs defaultValue="basic-info" className="space-y-2">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="basic-info">Basic Information</TabsTrigger>
+                        <TabsTrigger value="access-control">Access Control</TabsTrigger>
+                        <TabsTrigger value="permissions">Permissions</TabsTrigger>
+                    </TabsList>
 
-                <Separator className="my-4" />
+                    <TabsContent value="basic-info" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Basic Information</CardTitle>
+                                <CardDescription>
+                                    Manage your organization's name, logo, and contact
+                                    details.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <BasicInfoForm
+                                    orgId={orgId}
+                                    initialSettings={settings}
+                                />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Access Control</CardTitle>
-                        <CardDescription>
-                            Configure privacy, user registration, and security
-                            policies.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <AccessControlForm
-                            orgId={orgId}
-                            initialSettings={settings}
-                        />
-                    </CardContent>
-                </Card>
+                    <TabsContent value="access-control" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Access Control</CardTitle>
+                                <CardDescription>
+                                    Configure privacy, user registration, and security
+                                    policies.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <AccessControlForm
+                                    orgId={orgId}
+                                    initialSettings={settings}
+                                />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
 
-                <Separator className="my-4" />
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Permission Matrix</CardTitle>
-                        <CardDescription>
-                            Visualize and manage permissions across all roles.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <PermissionMatrix
-                            roles={roles}
-                            allPermissions={allPermissions}
-                            orgId={orgId}
-                        />
-                    </CardContent>
-                </Card>
+                    <TabsContent value="permissions" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Permission Matrix</CardTitle>
+                                <CardDescription>
+                                    Visualize and manage permissions across all roles.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <PermissionMatrix
+                                    roles={roles}
+                                    allPermissions={allPermissions}
+                                    orgId={orgId}
+                                />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     )

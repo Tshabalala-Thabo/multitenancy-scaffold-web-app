@@ -8,7 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Header from '@/components/Header'
 
 // Mock data fetching functions (replace with actual API calls)
@@ -133,8 +133,8 @@ async function getOrgRoles(orgId: number): Promise<OrgRole[]> {
 }
 
 export default async function UserManagementPage({
-    params,
-}: {
+                                                     params,
+                                                 }: {
     params: { orgId: string }
 }) {
     const orgId = Number.parseInt(params.orgId)
@@ -145,41 +145,50 @@ export default async function UserManagementPage({
     return (
         <div>
             <Header title="User Management" />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Organization Users</CardTitle>
-                        <CardDescription>
-                            Manage users within your organization.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <UserList
-                            users={users}
-                            orgRoles={orgRoles}
-                            orgId={orgId}
-                        />
-                    </CardContent>
-                </Card>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+                <Tabs defaultValue="users" className="space-y-2">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="users">Organization Users</TabsTrigger>
+                        <TabsTrigger value="invitations">Invitations</TabsTrigger>
+                    </TabsList>
 
-                <Separator className="my-4" />
+                    <TabsContent value="users" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Organization Users</CardTitle>
+                                <CardDescription>
+                                    Manage users within your organization.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <UserList
+                                    users={users}
+                                    orgRoles={orgRoles}
+                                    orgId={orgId}
+                                />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Invite New Users</CardTitle>
-                        <CardDescription>
-                            Send invitations to new members to join your
-                            organization.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <UserInvitation
-                            pendingInvitations={pendingInvitations}
-                            orgRoles={orgRoles}
-                            orgId={orgId}
-                        />
-                    </CardContent>
-                </Card>
+                    <TabsContent value="invitations" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Invite New Users</CardTitle>
+                                <CardDescription>
+                                    Send invitations to new members to join your
+                                    organization.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <UserInvitation
+                                    pendingInvitations={pendingInvitations}
+                                    orgRoles={orgRoles}
+                                    orgId={orgId}
+                                />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     )
