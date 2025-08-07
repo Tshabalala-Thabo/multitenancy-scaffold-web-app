@@ -165,7 +165,7 @@ export const useOrganisation = () => {
                         },
                     )
                 } else {
-                    const { logo, logo_preview, ...dataWithoutLogo } =
+                    const { ...dataWithoutLogo } = organisationData
                     response = await axios.put(
                         `/api/tenants/${editingOrganisation.id}`,
                         dataWithoutLogo,
@@ -236,7 +236,10 @@ export const useOrganisation = () => {
                     })
                 } else {
                     const { logo, logo_preview, ...dataWithoutLogo } =
-                    response = await axios.post('/api/tenants', dataWithoutLogo)
+                        (response = await axios.post(
+                            '/api/tenants',
+                            dataWithoutLogo,
+                        ))
                 }
 
                 const newOrganisation = response.data

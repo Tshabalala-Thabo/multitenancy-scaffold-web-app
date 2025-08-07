@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Building2, User, MapPin, Upload, X, Trash2, Plus } from 'lucide-react'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { Organisation } from '@/types/organisation'
 import { ReusableDialog, FormDialogFooter } from '@/components/ReusableDialog'
 
@@ -479,71 +480,43 @@ export function OrganisationForm({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="logo">Logo</Label>
-                    <div className="space-y-4">
-                      {formData.logo_preview ? (
-                        <div className="relative w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg overflow-hidden flex items-center justify-center">
-                          <img
-                            src={
-                              formData.logo_preview ||
-                              '/placeholder.svg'
-                            }
-                            alt="Logo preview"
-                            className="max-w-full max-h-full object-contain"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-1 right-1"
-                            onClick={removeLogo}>
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-muted-foreground/50 transition-colors">
-                          <Upload className="h-6 w-6 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            Upload Logo
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            document
-                              .getElementById(
-                                'logo-upload',
-                              )
-                              ?.click()
-                          }>
-                          <Upload className="mr-2 h-4 w-4" />
-                          {formData.logo_preview
-                            ? 'Change Logo'
-                            : 'Upload Logo'}
-                        </Button>
-                        <input
-                          id="logo-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          className="hidden"
-                        />
-                        <p className="text-sm text-muted-foreground">
-                          Max file size: 2MB.
-                          Supported formats: JPG, PNG,
-                          GIF
-                        </p>
-                      </div>
+                    <ImageUpload
+                      imagePreview={formData.logo_preview}
+                      onRemove={removeLogo}
+                      onUploadClick={() => document.getElementById('logo-upload')?.click()}
+                      onFileChange={(file) => {
+                        if (file.size > 2048 * 1024) {
+                          setErrors(prev => ({
+                            ...prev,
+                            logo: 'File size must be less than 2MB'
+                          }));
+                          return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            logo: file,
+                            logo_preview: e.target?.result as string,
+                            remove_logo: false
+                          }));
+                        };
+                        reader.readAsDataURL(file);
+
+                        if (errors.logo) {
+                          setErrors(prev => ({ ...prev, logo: undefined }));
+                        }
+                      }}
+                      uploadButtonId="logo-upload"
+                      label="Upload Logo"
+                    />
                       {errors.logo && (
                         <p className="text-sm text-destructive">
                           {errors.logo}
                         </p>
                       )}
                     </div>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
