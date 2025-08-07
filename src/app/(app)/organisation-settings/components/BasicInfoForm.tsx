@@ -2,24 +2,20 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import type { OrganizationSettings } from "@/types/organisation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
-import Image from "next/image"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 interface BasicInfoFormProps {
-    orgId: number
     initialSettings: OrganizationSettings
 }
 
-export function BasicInfoForm({ orgId, initialSettings }: BasicInfoFormProps) {
+export function BasicInfoForm({ initialSettings }: BasicInfoFormProps) {
     const [name, setName] = useState(initialSettings.name)
-    const [description, setDescription] = useState(initialSettings.description || "")
     const [logoFile, setLogoFile] = useState<File | null>(null)
     const [logoPreview, setLogoPreview] = useState<string | null>(initialSettings.logo_url)
     const [domain, setDomain] = useState(initialSettings.domain || "")
@@ -28,16 +24,22 @@ export function BasicInfoForm({ orgId, initialSettings }: BasicInfoFormProps) {
     const [city, setCity] = useState(initialSettings.address.city)
     const [province, setProvince] = useState(initialSettings.address.province)
     const [postalCode, setPostalCode] = useState(initialSettings.address.postal_code)
-    const [timezone, setTimezone] = useState(initialSettings.timezone)
-    const [localization, setLocalization] = useState(initialSettings.localization)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0]
-            setLogoFile(file)
-            setLogoPreview(URL.createObjectURL(file))
-        }
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const handleLogoChange = (file: File) => {
+        setLogoFile(file)
+        setLogoPreview(URL.createObjectURL(file))
+    }
+
+    const handleRemoveLogo = () => {
+        setLogoFile(null)
+        setLogoPreview(null)
+    }
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click()
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -51,12 +53,8 @@ export function BasicInfoForm({ orgId, initialSettings }: BasicInfoFormProps) {
 
         const updatedSettings = {
             name,
-            description,
             domain,
             address: { street_address: streetAddress, suburb, city, province, postal_code: postalCode },
-            timezone,
-            localization,
-            // logo_url would come from the upload response
         }
         console.log("Updated Basic Settings:", updatedSettings)
         console.log("New Logo File:", logoFile)
@@ -67,41 +65,42 @@ export function BasicInfoForm({ orgId, initialSettings }: BasicInfoFormProps) {
 
     return (
         <form onSubmit={handleSubmit} className="grid gap-6">
-            <div className="grid gap-2">
-                <Label htmlFor="name">Organization Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="name">Organization Name</Label>
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
 
-            <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-            </div>
-
-            <div className="grid gap-2">
-                <Label htmlFor="logo">Organization Logo</Label>
-                <div className="flex items-center gap-4">
-                    {logoPreview && (
-                        <Image
-                            src={logoPreview || "/placeholder.svg"}
-                            alt="Organization Logo"
-                            width={64}
-                            height={64}
-                            className="rounded-full object-cover"
-                        />
-                    )}
-                    <Input
-                        id="logo"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoChange}
-                        className="flex-1 file:text-primary-foreground file:bg-primary hover:file:bg-primary/90"
-                    />
+                <div className="grid gap-2">
+                    <Label htmlFor="domain">Domain</Label>
+                    <Input id="domain" placeholder="e.g., yourorg.com" value={domain} onChange={(e) => setDomain(e.target.value)} />
                 </div>
             </div>
 
             <div className="grid gap-2">
-                <Label htmlFor="domain">Custom Domain</Label>
-                <Input id="domain" placeholder="e.g., yourorg.com" value={domain} onChange={(e) => setDomain(e.target.value)} />
+                <Label>Organization Logo</Label>
+                <ImageUpload
+                    imagePreview={logoPreview}
+                    onRemove={handleRemoveLogo}
+                    onUploadClick={handleUploadClick}
+                    onFileChange={handleLogoChange}
+                    uploadButtonId="logo-upload"
+                    className="w-full"
+                    size="lg"
+                    label="Upload Logo"
+                />
+                <input
+                    ref={fileInputRef}
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                            handleLogoChange(e.target.files[0])
+                        }
+                    }}
+                />
             </div>
 
             <fieldset className="grid gap-4 rounded-lg border p-4">
@@ -131,37 +130,6 @@ export function BasicInfoForm({ orgId, initialSettings }: BasicInfoFormProps) {
                     </div>
                 </div>
             </fieldset>
-
-            <div className="grid md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select value={timezone} onValueChange={setTimezone}>
-                        <SelectTrigger id="timezone">
-                            <SelectValue placeholder="Select timezone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="America/New_York">America/New_York</SelectItem>
-                            <SelectItem value="Europe/London">Europe/London</SelectItem>
-                            <SelectItem value="Asia/Tokyo">Asia/Tokyo</SelectItem>
-                            {/* Add more timezones */}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="localization">Localization</Label>
-                    <Select value={localization} onValueChange={setLocalization}>
-                        <SelectTrigger id="localization">
-                            <SelectValue placeholder="Select localization" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="en-US">English (US)</SelectItem>
-                            <SelectItem value="en-GB">English (UK)</SelectItem>
-                            <SelectItem value="es-ES">Spanish (Spain)</SelectItem>
-                            {/* Add more localizations */}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Saving..." : "Save Changes"}

@@ -16,9 +16,8 @@ interface AccessControlFormProps {
   initialSettings: OrganizationSettings
 }
 
-export function AccessControlForm({ orgId, initialSettings }: AccessControlFormProps) {
+export function AccessControlForm({ initialSettings }: AccessControlFormProps) {
   const [privacySetting, setPrivacySetting] = useState(initialSettings.privacy_setting)
-  const [domainRestrictions, setDomainRestrictions] = useState(initialSettings.domain_restrictions.join(", "))
   const [twoFactorAuthRequired, setTwoFactorAuthRequired] = useState(initialSettings.two_factor_auth_required)
   const [passwordMinLength, setPasswordMinLength] = useState(initialSettings.password_policy.min_length)
   const [passwordRequiresUppercase, setPasswordRequiresUppercase] = useState(
@@ -40,10 +39,6 @@ export function AccessControlForm({ orgId, initialSettings }: AccessControlFormP
 
     const updatedSettings = {
       privacy_setting: privacySetting,
-      domain_restrictions: domainRestrictions
-        .split(",")
-        .map((d) => d.trim())
-        .filter((d) => d),
       two_factor_auth_required: twoFactorAuthRequired,
       password_policy: {
         min_length: passwordMinLength,
@@ -73,23 +68,9 @@ export function AccessControlForm({ orgId, initialSettings }: AccessControlFormP
           <SelectContent>
             <SelectItem value="public">Public (Anyone can join)</SelectItem>
             <SelectItem value="private">Private (Requires invitation)</SelectItem>
-            <SelectItem value="invite-only">Invite Only (Strictly by invitation)</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">Determines how new users can join your organization.</p>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="domain-restrictions">Domain Restrictions for User Registration</Label>
-        <Input
-          id="domain-restrictions"
-          placeholder="e.g., example.com, another.org (comma-separated)"
-          value={domainRestrictions}
-          onChange={(e) => setDomainRestrictions(e.target.value)}
-        />
-        <p className="text-sm text-muted-foreground">
-          Only users with emails from these domains can register or be invited. Leave empty for no restrictions.
-        </p>
       </div>
 
       <div className="flex items-center justify-between">
