@@ -73,7 +73,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
 
     const handleOrgChange = async (org: (typeof organizations)[0]) => {
         if (isSwitching || org.id === user.tenant_id) return
-        
+
         try {
             setIsSwitching(true)
             const success = await switchOrganisation(org.id)
@@ -227,6 +227,16 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                 href="/announcements"
                                 active={usePathname() === '/announcements'}>
                                 Announcements
+                            </NavLink>
+                            <NavLink
+                                href="/organisation-settings"
+                                active={usePathname() === '/organisation-settings'}>
+                                Organisation Settings
+                            </NavLink>
+                            <NavLink
+                                href="/users"
+                                active={usePathname() === '/users'}>
+                                Users
                             </NavLink>
                             <NavLink
                                 href="/organisations"
