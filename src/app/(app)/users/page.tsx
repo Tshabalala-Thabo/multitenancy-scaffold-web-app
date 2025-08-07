@@ -1,4 +1,4 @@
-import type { OrgUser, PendingInvitation, OrgRole } from '@/lib/types'
+import type { OrgUser, PendingInvitation, OrgRole } from '@/types/user-invitation'
 import { UserList } from './components/UserList'
 import { UserInvitation } from './components/UserInvitation'
 import {
