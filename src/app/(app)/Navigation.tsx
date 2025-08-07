@@ -43,6 +43,13 @@ const getUserRole = (user: UserType, tenantId: number): string => {
     return role ? role.name : 'member'
 }
 
+// Helper function to check if user has a specific permission for the current tenant
+const hasPermission = (user: UserType, permission: string): boolean => {
+    return user.permissions?.some(perm =>
+        perm.name === permission && perm.tenant_id === user.tenant_id
+    ) ?? false
+}
+
 const Navigation: React.FC<NavigationProps> = ({ user }) => {
     const { logout } = useAuth()
     const router = useRouter()
@@ -60,6 +67,8 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
             logo_url: org.logo_url,
         }))
     }, [user])
+
+    console.log(user)
 
     // Find the currently selected organization based on current_tenant_id
     const selectedOrg = useMemo(() => {
@@ -86,11 +95,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
         } finally {
             setIsSwitching(false)
         }
-    }
-
-    const handleCreateOrganization = () => {
-        // Handle create organization logic here
-        console.log('Create new organization')
     }
 
     // Check if user has organizations to determine what to show on the left
@@ -228,11 +232,14 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                 active={usePathname() === '/announcements'}>
                                 Announcements
                             </NavLink>
-                            <NavLink
-                                href="/organisation-settings"
-                                active={usePathname() === '/organisation-settings'}>
-                                Organisation Settings
-                            </NavLink>
+                            {/* Organisation Settings - Only show if user has settings:manage permission */}
+                            {hasPermission(user, 'settings:manage') && (
+                                <NavLink
+                                    href="/organisation-settings"
+                                    active={usePathname() === '/organisation-settings'}>
+                                    Organisation Settings
+                                </NavLink>
+                            )}
                             <NavLink
                                 href="/users"
                                 active={usePathname() === '/users'}>
@@ -356,6 +363,14 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                             active={usePathname() === '/announcements'}>
                             Announcements
                         </ResponsiveNavLink>
+                        {/* Organisation Settings - Only show if user has settings:manage permission */}
+                        {hasPermission(user, 'settings:manage') && (
+                            <ResponsiveNavLink
+                                href="/organisation-settings"
+                                active={usePathname() === '/organisation-settings'}>
+                                Organisation Settings
+                            </ResponsiveNavLink>
+                        )}
                         <ResponsiveNavLink
                             href="/organisations"
                             active={usePathname() === '/organisations'}>
