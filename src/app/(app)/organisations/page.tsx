@@ -6,6 +6,7 @@ import { OrganisationDetailView } from './components/OrganisationDetailView'
 import { OrganisationListView } from './components/OrganisationListView'
 import { UserOrganisationView } from './components/UserOrganisationView'
 import { useAuth } from '@/hooks/auth'
+import usePermissions from '@/hooks/usePermissions'
 
 export default function OrganisationsPage() {
     const {
@@ -26,10 +27,12 @@ export default function OrganisationsPage() {
         isLoading
     } = useOrganisation()
 
+    const { isSuperAdmin } = usePermissions()
+
     const { user } = useAuth()
     return (
         <main>
-            {user?.roles.some(role => role.name === 'super_admin') ? (
+            {isSuperAdmin() ? (
                 currentView === 'list' ? (
                     <OrganisationListView
                         searchTerm={searchTerm}
