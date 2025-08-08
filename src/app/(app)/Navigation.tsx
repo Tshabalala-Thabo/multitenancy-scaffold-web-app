@@ -277,9 +277,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                             <NavLink
                                 href="/organisations"
                                 active={usePathname() === '/organisations'}>
-                                {isSuperAdmin()
-                                    ? 'Organisations'
-                                    : 'Discover'}
+                                {isSuperAdmin() ? 'Organisations' : 'Discover'}
                             </NavLink>
                         </div>
                     </div>
@@ -393,7 +391,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                             Announcements
                         </ResponsiveNavLink>
                         {/* Organisation Settings - Only show if user has settings:manage permission */}
-                        {hasPermission(user, 'settings:manage') && (
+                        {canManageSettings() && (
                             <ResponsiveNavLink
                                 href="/organisation-settings"
                                 active={
