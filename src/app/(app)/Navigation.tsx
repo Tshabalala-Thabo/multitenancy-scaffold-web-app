@@ -1,4 +1,4 @@
-import React, { useState, useMemo, Suspense } from 'react'
+import React, { useState, useMemo } from 'react'
 import ApplicationLogo from '@/components/ApplicationLogo'
 import Dropdown from '@/components/Dropdown'
 import Link from 'next/link'
@@ -19,10 +19,18 @@ import { useAuth } from '@/hooks/auth'
 import { usePathname } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { ChevronsUpDown, ChevronDown, Search, User, Settings, LogOut } from 'lucide-react'
+import {
+    ChevronsUpDown,
+    ChevronDown,
+    Search,
+    User,
+    Settings,
+    LogOut,
+} from 'lucide-react'
 import { User as UserType } from '@/hooks/auth'
 import { useRouter } from 'next/navigation'
 import useOrganisationUser from '@/hooks/useOrganisationUser'
+import usePermissions from '@/hooks/usePermissions'
 
 interface NavigationProps {
     user: UserType
@@ -43,12 +51,24 @@ const getUserRole = (user: UserType, tenantId: number): string => {
     return role ? role.name : 'member'
 }
 
+// Helper function to check if user has a specific permission for the current tenant
+const hasPermission = (user: UserType, permission: string): boolean => {
+    return (
+        user.permissions?.some(
+            perm =>
+                perm.name === permission && perm.tenant_id === user.tenant_id,
+        ) ?? false
+    )
+}
+
 const Navigation: React.FC<NavigationProps> = ({ user }) => {
     const { logout } = useAuth()
     const router = useRouter()
     const { switchOrganisation } = useOrganisationUser()
     const [isSwitching, setIsSwitching] = useState<boolean>(false)
     const userRoles = user.roles.map(role => role.name)
+    const { canManageSettings, isSuperAdmin } = usePermissions()
+    const pathname = usePathname()
 
     // Transform user organizations to match the dropdown format
     const organizations = useMemo(() => {
@@ -60,6 +80,8 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
             logo_url: org.logo_url,
         }))
     }, [user])
+
+    console.log(user)
 
     // Find the currently selected organization based on current_tenant_id
     const selectedOrg = useMemo(() => {
@@ -73,7 +95,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
 
     const handleOrgChange = async (org: (typeof organizations)[0]) => {
         if (isSwitching || org.id === user.tenant_id) return
-        
+
         try {
             setIsSwitching(true)
             const success = await switchOrganisation(org.id)
@@ -86,11 +108,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
         } finally {
             setIsSwitching(false)
         }
-    }
-
-    const handleCreateOrganization = () => {
-        // Handle create organization logic here
-        console.log('Create new organization')
     }
 
     // Check if user has organizations to determine what to show on the left
@@ -110,13 +127,17 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
-                                                variant='ghost'
+                                                variant="ghost"
                                                 className="flex items-center space-x-2 h-12 px-3 bg-transparent hover:bg-foreground/10 transition-all duration-200">
                                                 <Avatar className="w-8 h-8 rounded-none">
                                                     {selectedOrg?.logo_url ? (
                                                         <AvatarImage
-                                                            src={selectedOrg.logo_url}
-                                                            alt={selectedOrg.name}
+                                                            src={
+                                                                selectedOrg.logo_url
+                                                            }
+                                                            alt={
+                                                                selectedOrg.name
+                                                            }
                                                             className="object-contain rounded-none"
                                                         />
                                                     ) : null}
@@ -153,8 +174,12 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                                         <Avatar className="w-10 h-10 shadow-sm rounded-none">
                                                             {org.logo_url ? (
                                                                 <AvatarImage
-                                                                    src={org.logo_url}
-                                                                    alt={org.name}
+                                                                    src={
+                                                                        org.logo_url
+                                                                    }
+                                                                    alt={
+                                                                        org.name
+                                                                    }
                                                                     className="object-contain rounded-none"
                                                                 />
                                                             ) : null}
@@ -167,10 +192,15 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                                                 {org.name}
                                                             </div>
                                                             <div className="text-sm text-gray-500 capitalize">
-                                                                {isSwitching && selectedOrg?.id === org.id ? 'Switching...' : org.role}
+                                                                {isSwitching &&
+                                                                selectedOrg?.id ===
+                                                                    org.id
+                                                                    ? 'Switching...'
+                                                                    : org.role}
                                                             </div>
                                                         </div>
-                                                        {selectedOrg?.id === org.id && (
+                                                        {selectedOrg?.id ===
+                                                            org.id && (
                                                             <div className="w-2 h-2 bg-blue-600 rounded-full shadow-sm" />
                                                         )}
                                                     </DropdownMenuItem>
@@ -228,12 +258,26 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                 active={usePathname() === '/announcements'}>
                                 Announcements
                             </NavLink>
+                            {/* Organisation Settings - Only show if user has settings:manage permission */}
+                            {canManageSettings() && (
+                                <NavLink
+                                    href="/organisation-settings"
+                                    active={
+                                        usePathname() ===
+                                        '/organisation-settings'
+                                    }>
+                                    Organisation Settings
+                                </NavLink>
+                            )}
+                            <NavLink
+                                href="/users"
+                                active={usePathname() === '/users'}>
+                                Users
+                            </NavLink>
                             <NavLink
                                 href="/organisations"
                                 active={usePathname() === '/organisations'}>
-                                {userRoles.includes('super_admin')
-                                    ? 'Organisations'
-                                    : 'Discover'}
+                                {isSuperAdmin() ? 'Organisations' : 'Discover'}
                             </NavLink>
                         </div>
                     </div>
@@ -346,6 +390,16 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                             active={usePathname() === '/announcements'}>
                             Announcements
                         </ResponsiveNavLink>
+                        {/* Organisation Settings - Only show if user has settings:manage permission */}
+                        {canManageSettings() && (
+                            <ResponsiveNavLink
+                                href="/organisation-settings"
+                                active={
+                                    usePathname() === '/organisation-settings'
+                                }>
+                                Organisation Settings
+                            </ResponsiveNavLink>
+                        )}
                         <ResponsiveNavLink
                             href="/organisations"
                             active={usePathname() === '/organisations'}>

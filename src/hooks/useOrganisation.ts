@@ -236,6 +236,7 @@ export const useOrganisation = () => {
                     })
                 } else {
                     const { logo, logo_preview, ...dataWithoutLogo } =
+                        organisationData
                     response = await axios.post('/api/tenants', dataWithoutLogo)
                 }
 

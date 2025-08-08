@@ -2,7 +2,7 @@ import useSWR from 'swr'
 import axios from '@/lib/axios'
 import { useEffect } from 'react'
 import { Organisation } from '@/types/organisation'
-import { Role } from '@/types/roles-and-permissions'
+import { Role, Permission } from '@/types/roles-and-permissions'
 import { useParams, useRouter } from 'next/navigation'
 
 // Types
@@ -11,6 +11,7 @@ export interface User {
     name: string
     last_name: string
     roles: Role[]
+    permissions: Permission[]
     tenant_id?: number
     organisations: Pick<Organisation, 'id' | 'name' | 'logo_url'>[]
     email: string

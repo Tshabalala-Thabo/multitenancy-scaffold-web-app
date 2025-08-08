@@ -1,17 +1,17 @@
 'use client'
 
-import React from 'react';
-import { useAuth } from '@/hooks/auth';
-import Navigation from '@/app/(app)/Navigation';
-import Loading from '@/app/(app)/Loading';
-import { Toaster } from "@/components/ui/toaster"
+import React from 'react'
+import { useAuth } from '@/hooks/auth'
+import Navigation from '@/app/(app)/Navigation'
+import Loading from '@/app/(app)/Loading'
+import { Toaster } from '@/components/ui/toaster'
 
 interface AppLayoutProps {
-    children: React.ReactNode;
+    children: React.ReactNode
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-    const { user } = useAuth({ middleware: 'auth' });
+    const { user } = useAuth({ middleware: 'auth' })
 
     if (!user) {
         return <Loading />
