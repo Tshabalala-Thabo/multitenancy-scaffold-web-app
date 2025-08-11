@@ -39,6 +39,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(({
     )
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isDirty, setIsDirty] = useState(false)
+    const [showWarning, setShowWarning] = useState(false)
     const [internalPulse, setInternalPulse] = useState(false)
     const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -52,6 +53,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(({
                 }
 
                 setInternalPulse(true)
+                setShowWarning(true)
                 pulseTimeoutRef.current = setTimeout(() => {
                     setInternalPulse(false)
                     pulseTimeoutRef.current = null
@@ -149,6 +151,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(({
         setLogoPreview(initialValues.logoPreview)
         setLogoFile(null)
         setInternalPulse(false)
+        setShowWarning(false)
     }
 
     const handleLogoChange = (file: File) => {
@@ -217,6 +220,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(({
                 title: 'Success',
                 description: 'Organization basic information updated.',
             })
+            setShowWarning(false)
         } catch (error) {
             console.error('Error saving settings:', error)
             toast({
@@ -330,15 +334,21 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(({
                 </div>
             </fieldset>
 
-            <div className="flex gap-3">
+            <div className="flex justify-end gap-3">
+                {showWarning && isDirty && (
+                    <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                        You have unsaved changes. Please save or cancel your changes
+                        before leaving.
+                    </p>
+                )}
                 {isDirty && (
-                    <>
+                    <div className="flex gap-3">
                         <Button
                             type="button"
                             variant="outline"
                             className={`flex-1 transition-all duration-300 ${
                                 internalPulse
-                                    ? 'animate-pulse border-yellow-500 shadow-lg shadow-yellow-500/50 ring-2 ring-yellow-500/75'
+                                    ? 'animate-pulse border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/75'
                                     : ''
                             }`}
                             onClick={handleCancel}
@@ -355,15 +365,9 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(({
                             disabled={isSubmitting || !isDirty}>
                             {isSubmitting ? 'Saving...' : 'Save Changes'}
                         </Button>
-                    </>
+                    </div>
                 )}
             </div>
-            {internalPulse && (
-                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
-                    You have unsaved changes. Please save or cancel your changes
-                    before leaving.
-                </p>
-            )}
         </form>
     )
 })

@@ -42,11 +42,6 @@ export default function OrganizationSettingsPage() {
         }
     }, [organizationId, fetchOrganisationSettings])
 
-    // Function to trigger button pulsing from child components
-    // const triggerButtonPulse = useCallback(() => {
-    //     setShouldPulseButtons(true)
-    //     setTimeout(() => setShouldPulseButtons(false), 100) // Brief trigger, child handles timing
-    // }, [])
 
     if (isLoading || !organisationSettings || !organizationId) {
         return (
