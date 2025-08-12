@@ -45,6 +45,7 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
                 requires_number: initialSettings.password_policy.requires_number,
                 requires_symbol: initialSettings.password_policy.requires_symbol,
             },
+            _method: 'PUT',
         })
 
         const [initialValues, setInitialValues] = useState({
@@ -57,6 +58,7 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
                 requires_number: initialSettings.password_policy.requires_number,
                 requires_symbol: initialSettings.password_policy.requires_symbol,
             },
+            _method: 'PUT',
         })
 
         useImperativeHandle(
@@ -111,7 +113,6 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
             })
         }
 
-        // Update dirty state when form data changes
         useEffect(() => {
             const formIsDirty = JSON.stringify(formData) !== JSON.stringify(initialValues)
             setIsDirty(formIsDirty)
