@@ -130,7 +130,7 @@ export const useOrganisationUser = () => {
             toast({
                 title: 'Success!',
                 description:
-                    'Organization information updated successfully. Please note that the changes might take up to 5 minutes to reflect.',
+                    'Organization information updated successfully.',
                 variant: 'default',
             })
 

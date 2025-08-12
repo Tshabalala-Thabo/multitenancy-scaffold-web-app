@@ -69,7 +69,7 @@ export default function Alert({
 
     return (
         <div className={`rounded-md border px-4 py-3 ${border} ${text}`}>
-            <p className="text-sm flex items-start">
+            <div className="text-sm flex items-center">
                 {icon}
                 <span>
                     {title && <strong className="font-medium">{title}</strong>}
@@ -84,7 +84,7 @@ export default function Alert({
                         </a>
                     )}
                 </span>
-            </p>
+            </div>
         </div>
     )
 }

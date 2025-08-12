@@ -21,7 +21,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="min-h-screen bg-gray-100">
             <Navigation user={user} />
 
-            <main>
+            <main className="pb-12">
                 {children}
                 <Toaster />
             </main>

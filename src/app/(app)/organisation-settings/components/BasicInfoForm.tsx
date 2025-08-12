@@ -14,9 +14,9 @@ import type { OrganizationSettings } from '@/types/organisation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { toast } from '@/hooks/use-toast'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { BasicInfoData } from '@/hooks/useOrganisationUser'
+import Alert from '@/components/Alert'
 
 interface BasicInfoFormProps {
     initialSettings: OrganizationSettings
@@ -53,6 +53,8 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
         const [internalPulse, setInternalPulse] = useState(false)
         const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
         const { updateBasicInfo } = useOrganisationUser()
+        const [formUpdated, setFormUpdated] = useState(false)
+        const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({})
 
         // Expose triggerPulse function to parent via ref
         useImperativeHandle(
@@ -196,14 +198,11 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
             setIsSubmitting(true)
 
             try {
-                // Create FormData for file upload
                 const formData = new FormData()
 
-                // Add basic fields
-                formData.append('name', name)
-                formData.append('domain', domain)
+                formData.append('name', '')
+                formData.append('domain', '')
 
-                // Add address fields
                 formData.append('address[street_address]', streetAddress)
                 formData.append('address[suburb]', suburb)
                 formData.append('address[city]', city)
@@ -211,8 +210,6 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                 formData.append('address[postal_code]', postalCode)
                 formData.append('_method', 'PUT')
 
-
-                // Handle logo upload/removal
                 if (logoFile) {
                     formData.append('logo', logoFile)
                 } else if (logoRemoved) {
@@ -224,12 +221,17 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     pulseTimeoutRef.current = null
                 }
 
-                // You'll need to update your updateBasicInfo hook to handle FormData
-                const result: BasicInfoData = await updateBasicInfo(initialSettings.id, formData)
+                const result: BasicInfoData = await updateBasicInfo(
+                    initialSettings.id,
+                    formData,
+                )
 
                 if (result) {
-                    // Update initial values after successful save
-                    const newLogoPreview = logoFile ? logoPreview : (logoRemoved ? null : logoPreview)
+                    const newLogoPreview = logoFile
+                        ? logoPreview
+                        : logoRemoved
+                          ? null
+                          : logoPreview
 
                     setInitialValues({
                         name,
@@ -243,37 +245,70 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     })
                     setLogoFile(null)
                     setLogoRemoved(false)
-
-                    toast({
-                        title: "Success",
-                        description: "Organization information updated successfully.",
-                    })
+                    setFormUpdated(true)
                 }
-            } catch (error) {
-                console.error('Error updating organization info:', error)
-                toast({
-                    title: "Error",
-                    description: "Failed to update organization information. Please try again.",
-                    variant: "destructive",
-                })
+            } catch (error: any) {
+                // Handle field-specific validation errors
+                console.error("error", error.response.data.errors)
+                if (error.response?.data?.errors) {
+                    const errors: { [key: string]: string } = {}
+                    // Handle array of error strings
+                    if (Array.isArray(error.response.data.errors)) {
+                        // Map error messages to field names
+                        error.response.data.errors.forEach((errorMsg: string) => {
+                            // Extract field name from error message (e.g., "The domain is required.")
+                            const fieldMatch = errorMsg.toLowerCase().match(/the (\w+) is required/i)
+                            if (fieldMatch && fieldMatch[1]) {
+                                const fieldName = fieldMatch[1]
+                                errors[fieldName] = errorMsg
+                            }
+                        })
+                    } else {
+                        // Handle object format as fallback
+                        Object.keys(error.response.data.errors).forEach(field => {
+                            errors[field] = error.response.data.errors[field][0]
+                        })
+                    }
+                    setFieldErrors(errors)
+                }
             } finally {
+                setIsSubmitting(false)
                 setInternalPulse(false)
                 setShowWarning(false)
-                setIsSubmitting(false)
             }
         }
 
         return (
             <form onSubmit={handleSubmit} className="grid gap-6">
+                {formUpdated && (
+                    <Alert
+                        variant="info"
+                        title=" Please note that the changes might take a few minutes to reflect."
+                    />
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="name">Organization Name</Label>
                         <Input
                             id="name"
                             value={name}
-                            onChange={e => setName(e.target.value)}
+                            onChange={e => {
+                                setName(e.target.value)
+                                // Clear error when user types
+                                if (fieldErrors.name) {
+                                    setFieldErrors(prev => {
+                                        const newErrors = { ...prev }
+                                        delete newErrors.name
+                                        return newErrors
+                                    })
+                                }
+                            }}
+                            className={fieldErrors.name ? 'border-red-500' : ''}
                             required
                         />
+                        {fieldErrors.name && (
+                            <p className="text-sm text-red-500">{fieldErrors.name}</p>
+                        )}
                     </div>
 
                     <div className="grid gap-2">
@@ -282,9 +317,23 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             id="domain"
                             placeholder="e.g., yourorg.com"
                             value={domain}
-                            onChange={e => setDomain(e.target.value)}
+                            onChange={e => {
+                                setDomain(e.target.value)
+                                // Clear error when user types
+                                if (fieldErrors.domain) {
+                                    setFieldErrors(prev => {
+                                        const newErrors = { ...prev }
+                                        delete newErrors.domain
+                                        return newErrors
+                                    })
+                                }
+                            }}
+                            className={fieldErrors.domain ? 'border-red-500' : ''}
                             required
                         />
+                        {fieldErrors.domain && (
+                            <p className="text-sm text-red-500">{fieldErrors.domain}</p>
+                        )}
                     </div>
                 </div>
 
@@ -323,9 +372,22 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                         <Input
                             id="street-address"
                             value={streetAddress}
-                            onChange={e => setStreetAddress(e.target.value)}
+                            onChange={e => {
+                                setStreetAddress(e.target.value)
+                                if (fieldErrors.streetAddress) {
+                                    setFieldErrors(prev => {
+                                        const newErrors = { ...prev }
+                                        delete newErrors.streetAddress
+                                        return newErrors
+                                    })
+                                }
+                            }}
+                            className={fieldErrors.streetAddress ? 'border-red-500' : ''}
                             required
                         />
+                        {fieldErrors.streetAddress && (
+                            <p className="text-sm text-red-500">{fieldErrors.streetAddress}</p>
+                        )}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
@@ -333,18 +395,44 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             <Input
                                 id="suburb"
                                 value={suburb}
-                                onChange={e => setSuburb(e.target.value)}
+                                onChange={e => {
+                                    setSuburb(e.target.value)
+                                    if (fieldErrors.suburb) {
+                                        setFieldErrors(prev => {
+                                            const newErrors = { ...prev }
+                                            delete newErrors.suburb
+                                            return newErrors
+                                        })
+                                    }
+                                }}
+                                className={fieldErrors.suburb ? 'border-red-500' : ''}
                                 required
                             />
+                            {fieldErrors.suburb && (
+                                <p className="text-sm text-red-500">{fieldErrors.suburb}</p>
+                            )}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="city">City</Label>
                             <Input
                                 id="city"
                                 value={city}
-                                onChange={e => setCity(e.target.value)}
+                                onChange={e => {
+                                    setCity(e.target.value)
+                                    if (fieldErrors.city) {
+                                        setFieldErrors(prev => {
+                                            const newErrors = { ...prev }
+                                            delete newErrors.city
+                                            return newErrors
+                                        })
+                                    }
+                                }}
+                                className={fieldErrors.city ? 'border-red-500' : ''}
                                 required
                             />
+                            {fieldErrors.city && (
+                                <p className="text-sm text-red-500">{fieldErrors.city}</p>
+                            )}
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -353,18 +441,44 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             <Input
                                 id="province"
                                 value={province}
-                                onChange={e => setProvince(e.target.value)}
+                                onChange={e => {
+                                    setProvince(e.target.value)
+                                    if (fieldErrors.province) {
+                                        setFieldErrors(prev => {
+                                            const newErrors = { ...prev }
+                                            delete newErrors.province
+                                            return newErrors
+                                        })
+                                    }
+                                }}
+                                className={fieldErrors.province ? 'border-red-500' : ''}
                                 required
                             />
+                            {fieldErrors.province && (
+                                <p className="text-sm text-red-500">{fieldErrors.province}</p>
+                            )}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="postal-code">Postal Code</Label>
                             <Input
                                 id="postal-code"
                                 value={postalCode}
-                                onChange={e => setPostalCode(e.target.value)}
+                                onChange={e => {
+                                    setPostalCode(e.target.value)
+                                    if (fieldErrors.postalCode) {
+                                        setFieldErrors(prev => {
+                                            const newErrors = { ...prev }
+                                            delete newErrors.postalCode
+                                            return newErrors
+                                        })
+                                    }
+                                }}
+                                className={fieldErrors.postalCode ? 'border-red-500' : ''}
                                 required
                             />
+                            {fieldErrors.postalCode && (
+                                <p className="text-sm text-red-500">{fieldErrors.postalCode}</p>
+                            )}
                         </div>
                     </div>
                 </fieldset>
