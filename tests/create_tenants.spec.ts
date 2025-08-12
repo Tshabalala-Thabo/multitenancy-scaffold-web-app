@@ -5,14 +5,14 @@ test.describe('Organisation Management Single Flow', () => {
   test('Create multiple organisations using JSON data', async ({ page }) => {
     // Login once
     await page.context().clearCookies();
-    await page.goto('http://localhost:3001/login');
+    await page.goto(`${process.env.NEXT_PUBLIC_URL}/login`);
     await page.getByTestId('email-input').fill('super@admin.com');
     await page.getByTestId('password-input').fill('password');
     await page.getByTestId('remember-checkbox').check();
     await page.getByTestId('login-button').click();
     await expect(page).toHaveURL(/.*dashboard/);
 
-    await page.goto('http://localhost:3001/organisations');
+    await page.goto(`${process.env.NEXT_PUBLIC_URL}/organisations`);
 
     for (const org of organisations) {
       const slug = org.name.toLowerCase().replace(/\s+/g, '-');

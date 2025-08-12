@@ -39,6 +39,7 @@ export interface Organisation {
 
 
 export interface OrganizationSettings {
+    id: number
     name: string
     description: string | null
     logo_url: string | null

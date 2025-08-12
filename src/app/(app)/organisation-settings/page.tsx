@@ -7,16 +7,20 @@ import {
     CardTitle,
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BasicInfoForm } from './components/BasicInfoForm'
+import { BasicInfoForm, BasicInfoFormRef } from './components/BasicInfoForm'
 import { AccessControlForm } from './components/AccessControlForm'
 import Header from '@/components/Header'
 import { PermissionMatrix } from './components/PermissionMatrix'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '@/hooks/auth'
-export default function OrganizationSettingsPage() {
+import { Skeleton } from '@/components/ui/skeleton'
 
+export default function OrganizationSettingsPage() {
     const { user } = useAuth()
+    const [isFormDirty, setIsFormDirty] = useState(false)
+    const [activeTab, setActiveTab] = useState("basic-info")
+    const basicInfoFormRef = useRef<BasicInfoFormRef>(null)
 
     const {
         organisationSettings,
@@ -38,15 +42,45 @@ export default function OrganizationSettingsPage() {
         }
     }, [organizationId, fetchOrganisationSettings])
 
+
     if (isLoading || !organisationSettings || !organizationId) {
-        return <div>Loading...</div>
+        return (
+            <div>
+                <Header title="Organization Settings" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 space-y-6">
+                    <div className="space-y-2">
+                        <div className="flex space-x-4">
+                            {[1, 2, 3].map((i) => (
+                                <Skeleton key={i} className="h-10 w-full" />
+                            ))}
+                        </div>
+                        <div className="mt-6 space-y-6">
+                            <Skeleton className="h-96 w-full" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
         <div>
             <Header title="Organization Settings" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-                <Tabs defaultValue="basic-info" className="space-y-2">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(value) => {
+                        if (isFormDirty) {
+                            // Trigger button pulsing using the ref
+                            basicInfoFormRef.current?.triggerPulse()
+                            // Don't change the tab
+                            return
+                        } else {
+                            setActiveTab(value)
+                        }
+                    }}
+                    className="space-y-2"
+                >
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="basic-info">Basic Information</TabsTrigger>
                         <TabsTrigger value="access-control">Access Control</TabsTrigger>
@@ -64,8 +98,9 @@ export default function OrganizationSettingsPage() {
                             </CardHeader>
                             <CardContent>
                                 <BasicInfoForm
-                                    orgId={organizationId}
+                                    ref={basicInfoFormRef}
                                     initialSettings={organisationSettings}
+                                    onDirtyChange={setIsFormDirty}
                                 />
                             </CardContent>
                         </Card>
