@@ -6,15 +6,19 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BasicInfoForm, BasicInfoFormRef } from './components/BasicInfoForm'
-import { AccessControlForm } from './components/AccessControlForm'
+import Link from 'next/link'
+import { useAuth } from '@/hooks/auth'
+import Alert from '@/components/Alert'
 import Header from '@/components/Header'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useEffect, useState, useRef } from 'react'
 import { PermissionMatrix } from './components/PermissionMatrix'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
-import { useEffect, useState, useRef } from 'react'
-import { useAuth } from '@/hooks/auth'
-import { Skeleton } from '@/components/ui/skeleton'
+import { AccessControlForm } from './components/AccessControlForm'
+import { BasicInfoForm, BasicInfoFormRef } from './components/BasicInfoForm'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function OrganizationSettingsPage() {
     const { user } = useAuth()
@@ -42,7 +46,7 @@ export default function OrganizationSettingsPage() {
     }, [organizationId, fetchOrganisationSettings])
 
 
-    if (isLoading || !organisationSettings || !organizationId) {
+    if (isLoading) {
         return (
             <div>
                 <Header title="Organization Settings" />
@@ -55,6 +59,36 @@ export default function OrganizationSettingsPage() {
                         </div>
                         <div className="mt-6 space-y-6">
                             <Skeleton className="h-96 w-full" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (!organisationSettings || !organizationId) {
+        return (
+            <div>
+                <Header title="Organization Settings" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 space-y-4">
+                    <div className="space-y-4">
+                        <Alert
+                            variant="error"
+                            title="Organization Not Found"
+                            description="Organization not found or you do not have permission to view this page. Please contact your administrator if you believe this is an error."
+                        />
+                        <div className="flex justify-end gap-2 items-center">
+                            <Link href="/dashboard">
+                                <Button variant="outline">
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Back to Dashboard
+                                </Button>
+                            </Link>
+                            <Button
+                                onClick={() => organizationId && fetchOrganisationSettings(organizationId)}
+                            >
+                                Refresh
+                            </Button>
                         </div>
                     </div>
                 </div>
