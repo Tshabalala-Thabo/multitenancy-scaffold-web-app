@@ -3,6 +3,7 @@ import axios from '@/lib/axios'
 import { useRouter } from 'next/navigation'
 import { useToast } from './use-toast'
 import { useAuth } from './auth'
+import { ApiErrorResponse, isApiErrorResponse } from '@/types/api-error'
 import { OrganizationSettings } from '@/types/organisation'
 
 export interface BasicInfoData {
@@ -135,17 +136,30 @@ export const useOrganisationUser = () => {
             })
 
             return updatedData
-        } catch (err: any) {
-            const errorMessage =
-                err.response?.data?.message ||
-                'Failed to update organization information'
-            setError(errorMessage)
+        } catch (error: unknown) {
+            let errorMessage = 'Failed to update organization information'
+            
+            if (isApiErrorResponse(error)) {
+                errorMessage = error.response?.data?.message || errorMessage
+                
+                // Only set error state if it's not a validation error
+                // Validation errors will be handled by the form
+                if (!error.response?.data?.errors) {
+                    setError(errorMessage)
+                }
+            } else if (error instanceof Error) {
+                errorMessage = error.message
+                setError(errorMessage)
+            }
+            
             toast({
                 title: 'Error',
                 description: errorMessage,
                 variant: 'destructive',
             })
-            throw err
+            
+            // Re-throw the error so the form can handle validation errors
+            throw error
         } finally {
             setIsLoading(false)
         }

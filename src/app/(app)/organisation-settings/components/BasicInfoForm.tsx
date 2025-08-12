@@ -9,6 +9,7 @@ import {
     useImperativeHandle,
     forwardRef,
 } from 'react'
+import { extractValidationErrors } from '@/types/api-error'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
 import type { OrganizationSettings } from '@/types/organisation'
 import { Button } from '@/components/ui/button'
@@ -27,9 +28,8 @@ export interface BasicInfoFormRef {
     triggerPulse: () => void
 }
 
-interface ValidationErrors {
-    [key: string]: string
-}
+
+type ValidationErrors = Record<string, string | string[]>
 
 export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
     ({ initialSettings, onDirtyChange }, ref) => {
@@ -146,13 +146,12 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
         }
 
         const clearFieldError = (fieldName: string) => {
-            if (fieldErrors[fieldName]) {
-                setFieldErrors(prev => {
-                    const newErrors = { ...prev }
-                    delete newErrors[fieldName]
-                    return newErrors
-                })
-            }
+            setFieldErrors(prev => {
+                // Create a new object without the field to clear
+                const { [fieldName]: ignored, ...rest } = prev
+                void ignored
+                return rest
+            })
         }
 
         useEffect(() => {
@@ -319,23 +318,10 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     setLogoRemoved(false)
                     setFormUpdated(true)
                 }
-            } catch (error: any) {
-                if (error.response?.data?.errors) {
-                    const errors: ValidationErrors = {}
-                    if (Array.isArray(error.response.data.errors)) {
-                        error.response.data.errors.forEach((errorMsg: string) => {
-                            const fieldMatch = errorMsg.toLowerCase().match(/the (\w+) is required/i)
-                            if (fieldMatch && fieldMatch[1]) {
-                                const fieldName = fieldMatch[1]
-                                errors[fieldName] = errorMsg
-                            }
-                        })
-                    } else {
-                        Object.keys(error.response.data.errors).forEach(field => {
-                            errors[field] = error.response.data.errors[field][0]
-                        })
-                    }
-                    setFieldErrors(errors)
+            } catch (error) {
+                const validationErrors = extractValidationErrors(error)
+                if (validationErrors) {
+                    setFieldErrors(validationErrors)
                 }
             } finally {
                 setIsSubmitting(false)
