@@ -340,7 +340,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Organization Name *</Label>
+                        <Label htmlFor="name">Organization Name</Label>
                         <Input
                             id="name"
                             value={name}
@@ -357,7 +357,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="domain">Domain *</Label>
+                        <Label htmlFor="domain">Domain</Label>
                         <Input
                             id="domain"
                             placeholder="e.g., yourorg.com"
@@ -376,7 +376,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                 </div>
 
                 <div className="grid gap-2">
-                    <Label>Organization Logo</Label>
+                    <Label>Organization Logo (Optional)</Label>
                     <ImageUpload
                         imagePreview={logoPreview}
                         onRemove={handleRemoveLogo}
@@ -406,7 +406,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                         Address
                     </legend>
                     <div className="grid gap-2">
-                        <Label htmlFor="streetAddress">Street Address *</Label>
+                        <Label htmlFor="streetAddress">Street Address</Label>
                         <Input
                             id="streetAddress"
                             value={streetAddress}
@@ -423,7 +423,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="suburb">Suburb *</Label>
+                            <Label htmlFor="suburb">Suburb</Label>
                             <Input
                                 id="suburb"
                                 value={suburb}
@@ -439,7 +439,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             )}
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="city">City *</Label>
+                            <Label htmlFor="city">City</Label>
                             <Input
                                 id="city"
                                 value={city}
@@ -457,7 +457,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="province">Province *</Label>
+                            <Label htmlFor="province">Province</Label>
                             <Input
                                 id="province"
                                 value={province}
@@ -473,7 +473,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             )}
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="postalCode">Postal Code *</Label>
+                            <Label htmlFor="postalCode">Postal Code</Label>
                             <Input
                                 id="postalCode"
                                 value={postalCode}
