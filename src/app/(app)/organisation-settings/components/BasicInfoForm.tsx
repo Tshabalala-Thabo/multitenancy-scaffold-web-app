@@ -27,6 +27,10 @@ export interface BasicInfoFormRef {
     triggerPulse: () => void
 }
 
+interface ValidationErrors {
+    [key: string]: string
+}
+
 export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
     ({ initialSettings, onDirtyChange }, ref) => {
         const [name, setName] = useState(initialSettings.name)
@@ -54,15 +58,13 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
         const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
         const { updateBasicInfo } = useOrganisationUser()
         const [formUpdated, setFormUpdated] = useState(false)
-        const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({})
+        const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({})
 
-        // Expose triggerPulse function to parent via ref
         useImperativeHandle(
             ref,
             () => ({
                 triggerPulse: () => {
                     if (!internalPulse) {
-                        // Clear any existing timeout
                         if (pulseTimeoutRef.current) {
                             clearTimeout(pulseTimeoutRef.current)
                         }
@@ -92,7 +94,67 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
 
         const fileInputRef = useRef<HTMLInputElement>(null)
 
-        // Check if form is dirty
+        const validateForm = (): ValidationErrors => {
+            const errors: ValidationErrors = {}
+            const trimmedName = name.trim()
+            const trimmedDomain = domain.trim()
+            const trimmedStreetAddress = streetAddress.trim()
+            const trimmedSuburb = suburb.trim()
+            const trimmedCity = city.trim()
+            const trimmedProvince = province.trim()
+            const trimmedPostalCode = postalCode.trim()
+
+            if (!trimmedName) {
+                errors.name = 'Organization name is required.'
+            }
+
+            if (!trimmedDomain) {
+                errors.domain = 'Domain is required.'
+            } else {
+                const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.([a-zA-Z]{2,}\.)*[a-zA-Z]{2,}$/
+                if (!domainRegex.test(trimmedDomain)) {
+                    errors.domain = 'Please enter a valid domain (e.g., yourorganisation.com).'
+                }
+            }
+
+            if (!trimmedStreetAddress) {
+                errors.streetAddress = 'Street address is required.'
+            }
+
+            if (!trimmedSuburb) {
+                errors.suburb = 'Suburb is required.'
+            }
+
+            if (!trimmedCity) {
+                errors.city = 'City is required.'
+            }
+
+            if (!trimmedProvince) {
+                errors.province = 'Province is required.'
+            }
+
+            if (!trimmedPostalCode) {
+                errors.postalCode = 'Postal code is required.'
+            } else {
+                const postalCodeRegex = /^\d{4}$/
+                if (!postalCodeRegex.test(trimmedPostalCode)) {
+                    errors.postalCode = 'Please enter a valid 4-digit postal code.'
+                }
+            }
+
+            return errors
+        }
+
+        const clearFieldError = (fieldName: string) => {
+            if (fieldErrors[fieldName]) {
+                setFieldErrors(prev => {
+                    const newErrors = { ...prev }
+                    delete newErrors[fieldName]
+                    return newErrors
+                })
+            }
+        }
+
         useEffect(() => {
             const isFormDirty =
                 name !== initialValues.name ||
@@ -125,14 +187,12 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
             onDirtyChange,
         ])
 
-        // Handle tab change attempt - trigger pulsing instead of showing modal
         const handleBeforeUnload = useCallback(
             (e: BeforeUnloadEvent) => {
                 if (isDirty) {
                     e.preventDefault()
                     e.returnValue = ''
 
-                    // Trigger pulsing animation
                     setInternalPulse(true)
                     setTimeout(() => setInternalPulse(false), 2000)
 
@@ -142,7 +202,6 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
             [isDirty],
         )
 
-        // Set up beforeunload event listener
         useEffect(() => {
             if (isDirty) {
                 window.addEventListener('beforeunload', handleBeforeUnload)
@@ -155,9 +214,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
             }
         }, [isDirty, handleBeforeUnload])
 
-        // Reset form to initial values
         const handleCancel = () => {
-            // Clear pulse timeout
             if (pulseTimeoutRef.current) {
                 clearTimeout(pulseTimeoutRef.current)
                 pulseTimeoutRef.current = null
@@ -175,18 +232,19 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
             setLogoRemoved(false)
             setInternalPulse(false)
             setShowWarning(false)
+            setFieldErrors({})
         }
 
         const handleLogoChange = (file: File) => {
             setLogoFile(file)
             setLogoPreview(URL.createObjectURL(file))
-            setLogoRemoved(false) // Reset removed flag when new file is selected
+            setLogoRemoved(false)
         }
 
         const handleRemoveLogo = () => {
             setLogoFile(null)
             setLogoPreview(null)
-            setLogoRemoved(true) // Set removed flag when logo is removed
+            setLogoRemoved(true)
         }
 
         const handleUploadClick = () => {
@@ -195,19 +253,33 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
 
         const handleSubmit = async (e: React.FormEvent) => {
             e.preventDefault()
+
+            const validationErrors = validateForm()
+
+            if (Object.keys(validationErrors).length > 0) {
+                setFieldErrors(validationErrors)
+                const firstErrorField = document.getElementById(Object.keys(validationErrors)[0])
+                if (firstErrorField) {
+                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    firstErrorField.focus()
+                }
+                return
+            }
+
             setIsSubmitting(true)
+            setFieldErrors({})
 
             try {
                 const formData = new FormData()
 
-                formData.append('name', '')
-                formData.append('domain', '')
+                formData.append('name', name.trim())
+                formData.append('domain', domain.trim())
 
-                formData.append('address[street_address]', streetAddress)
-                formData.append('address[suburb]', suburb)
-                formData.append('address[city]', city)
-                formData.append('address[province]', province)
-                formData.append('address[postal_code]', postalCode)
+                formData.append('address[street_address]', streetAddress.trim())
+                formData.append('address[suburb]', suburb.trim())
+                formData.append('address[city]', city.trim())
+                formData.append('address[province]', province.trim())
+                formData.append('address[postal_code]', postalCode.trim())
                 formData.append('_method', 'PUT')
 
                 if (logoFile) {
@@ -230,17 +302,17 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     const newLogoPreview = logoFile
                         ? logoPreview
                         : logoRemoved
-                          ? null
-                          : logoPreview
+                            ? null
+                            : logoPreview
 
                     setInitialValues({
-                        name,
-                        domain,
-                        streetAddress,
-                        suburb,
-                        city,
-                        province,
-                        postalCode,
+                        name: name.trim(),
+                        domain: domain.trim(),
+                        streetAddress: streetAddress.trim(),
+                        suburb: suburb.trim(),
+                        city: city.trim(),
+                        province: province.trim(),
+                        postalCode: postalCode.trim(),
                         logoPreview: newLogoPreview,
                     })
                     setLogoFile(null)
@@ -248,15 +320,10 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     setFormUpdated(true)
                 }
             } catch (error: any) {
-                // Handle field-specific validation errors
-                console.error("error", error.response.data.errors)
                 if (error.response?.data?.errors) {
-                    const errors: { [key: string]: string } = {}
-                    // Handle array of error strings
+                    const errors: ValidationErrors = {}
                     if (Array.isArray(error.response.data.errors)) {
-                        // Map error messages to field names
                         error.response.data.errors.forEach((errorMsg: string) => {
-                            // Extract field name from error message (e.g., "The domain is required.")
                             const fieldMatch = errorMsg.toLowerCase().match(/the (\w+) is required/i)
                             if (fieldMatch && fieldMatch[1]) {
                                 const fieldName = fieldMatch[1]
@@ -264,7 +331,6 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             }
                         })
                     } else {
-                        // Handle object format as fallback
                         Object.keys(error.response.data.errors).forEach(field => {
                             errors[field] = error.response.data.errors[field][0]
                         })
@@ -288,20 +354,13 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Organization Name</Label>
+                        <Label htmlFor="name">Organization Name *</Label>
                         <Input
                             id="name"
                             value={name}
                             onChange={e => {
                                 setName(e.target.value)
-                                // Clear error when user types
-                                if (fieldErrors.name) {
-                                    setFieldErrors(prev => {
-                                        const newErrors = { ...prev }
-                                        delete newErrors.name
-                                        return newErrors
-                                    })
-                                }
+                                clearFieldError('name')
                             }}
                             className={fieldErrors.name ? 'border-red-500' : ''}
                             required
@@ -312,21 +371,14 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="domain">Domain</Label>
+                        <Label htmlFor="domain">Domain *</Label>
                         <Input
                             id="domain"
                             placeholder="e.g., yourorg.com"
                             value={domain}
                             onChange={e => {
                                 setDomain(e.target.value)
-                                // Clear error when user types
-                                if (fieldErrors.domain) {
-                                    setFieldErrors(prev => {
-                                        const newErrors = { ...prev }
-                                        delete newErrors.domain
-                                        return newErrors
-                                    })
-                                }
+                                clearFieldError('domain')
                             }}
                             className={fieldErrors.domain ? 'border-red-500' : ''}
                             required
@@ -368,19 +420,13 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                         Address
                     </legend>
                     <div className="grid gap-2">
-                        <Label htmlFor="street-address">Street Address</Label>
+                        <Label htmlFor="streetAddress">Street Address *</Label>
                         <Input
-                            id="street-address"
+                            id="streetAddress"
                             value={streetAddress}
                             onChange={e => {
                                 setStreetAddress(e.target.value)
-                                if (fieldErrors.streetAddress) {
-                                    setFieldErrors(prev => {
-                                        const newErrors = { ...prev }
-                                        delete newErrors.streetAddress
-                                        return newErrors
-                                    })
-                                }
+                                clearFieldError('streetAddress')
                             }}
                             className={fieldErrors.streetAddress ? 'border-red-500' : ''}
                             required
@@ -391,19 +437,13 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="suburb">Suburb</Label>
+                            <Label htmlFor="suburb">Suburb *</Label>
                             <Input
                                 id="suburb"
                                 value={suburb}
                                 onChange={e => {
                                     setSuburb(e.target.value)
-                                    if (fieldErrors.suburb) {
-                                        setFieldErrors(prev => {
-                                            const newErrors = { ...prev }
-                                            delete newErrors.suburb
-                                            return newErrors
-                                        })
-                                    }
+                                    clearFieldError('suburb')
                                 }}
                                 className={fieldErrors.suburb ? 'border-red-500' : ''}
                                 required
@@ -413,19 +453,13 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             )}
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="city">City</Label>
+                            <Label htmlFor="city">City *</Label>
                             <Input
                                 id="city"
                                 value={city}
                                 onChange={e => {
                                     setCity(e.target.value)
-                                    if (fieldErrors.city) {
-                                        setFieldErrors(prev => {
-                                            const newErrors = { ...prev }
-                                            delete newErrors.city
-                                            return newErrors
-                                        })
-                                    }
+                                    clearFieldError('city')
                                 }}
                                 className={fieldErrors.city ? 'border-red-500' : ''}
                                 required
@@ -437,19 +471,13 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="province">Province</Label>
+                            <Label htmlFor="province">Province *</Label>
                             <Input
                                 id="province"
                                 value={province}
                                 onChange={e => {
                                     setProvince(e.target.value)
-                                    if (fieldErrors.province) {
-                                        setFieldErrors(prev => {
-                                            const newErrors = { ...prev }
-                                            delete newErrors.province
-                                            return newErrors
-                                        })
-                                    }
+                                    clearFieldError('province')
                                 }}
                                 className={fieldErrors.province ? 'border-red-500' : ''}
                                 required
@@ -459,19 +487,13 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
                             )}
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="postal-code">Postal Code</Label>
+                            <Label htmlFor="postalCode">Postal Code *</Label>
                             <Input
-                                id="postal-code"
+                                id="postalCode"
                                 value={postalCode}
                                 onChange={e => {
                                     setPostalCode(e.target.value)
-                                    if (fieldErrors.postalCode) {
-                                        setFieldErrors(prev => {
-                                            const newErrors = { ...prev }
-                                            delete newErrors.postalCode
-                                            return newErrors
-                                        })
-                                    }
+                                    clearFieldError('postalCode')
                                 }}
                                 className={fieldErrors.postalCode ? 'border-red-500' : ''}
                                 required
