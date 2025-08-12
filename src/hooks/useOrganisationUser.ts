@@ -261,7 +261,6 @@ export const useOrganisationUser = () => {
         joinOrganisation,
         switchOrganisation,
         leaveOrganisation,
-        error,
     }
 }
 

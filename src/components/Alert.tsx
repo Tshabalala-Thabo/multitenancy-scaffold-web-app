@@ -74,7 +74,7 @@ export default function Alert({
                 <span>
                     {title && <strong className="font-medium">{title}</strong>}
                     {description && (
-                        <span className="block">{description}</span>
+                        <span className="block whitespace-pre-wrap">{description}</span>
                     )}
                     {linkText && linkHref && (
                         <a
