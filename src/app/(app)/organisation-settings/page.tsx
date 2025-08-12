@@ -21,12 +21,11 @@ export default function OrganizationSettingsPage() {
     const [isFormDirty, setIsFormDirty] = useState(false)
     const [activeTab, setActiveTab] = useState("basic-info")
     const basicInfoFormRef = useRef<BasicInfoFormRef>(null)
+    const accessControlFormRef = useRef<BasicInfoFormRef>(null)
 
     const {
         organisationSettings,
         isLoading,
-        error,
-        updateSettings,
         fetchOrganisationSettings
     } = useOrganisationUser()
 
@@ -71,9 +70,8 @@ export default function OrganizationSettingsPage() {
                     value={activeTab}
                     onValueChange={(value) => {
                         if (isFormDirty) {
-                            // Trigger button pulsing using the ref
                             basicInfoFormRef.current?.triggerPulse()
-                            // Don't change the tab
+                            accessControlFormRef.current?.triggerPulse()
                             return
                         } else {
                             setActiveTab(value)
@@ -117,8 +115,9 @@ export default function OrganizationSettingsPage() {
                             </CardHeader>
                             <CardContent>
                                 <AccessControlForm
-                                    orgId={organizationId}
+                                    ref={accessControlFormRef}
                                     initialSettings={organisationSettings}
+                                    onDirtyChange={setIsFormDirty}
                                 />
                             </CardContent>
                         </Card>
