@@ -116,17 +116,18 @@ export const useOrganisationUser = () => {
 
             const updatedData = response.data
 
-            // Update the organization settings with the new data
-            setOrganisationSettings(prev => ({
-                ...prev!,
-                name: updatedData.name,
-                domain: updatedData.domain,
-                address: updatedData.address,
-                // Update logo_url if it's in the response
-                ...(updatedData.logo_url !== undefined && {
-                    logo_url: updatedData.logo_url,
-                }),
-            }))
+            setOrganisationSettings(prev => {
+                if (!prev) return null
+                return {
+                    ...prev,
+                    name: updatedData.name,
+                    domain: updatedData.domain,
+                    address: updatedData.address,
+                    ...(updatedData.logo_url !== undefined && {
+                        logo_url: updatedData.logo_url,
+                    }),
+                }
+            })
 
             toast({
                 title: 'Success!',
@@ -138,12 +139,9 @@ export const useOrganisationUser = () => {
             return updatedData
         } catch (error: unknown) {
             let errorMessage = 'Failed to update organization information'
-            
+
             if (isApiErrorResponse(error)) {
                 errorMessage = error.response?.data?.message || errorMessage
-                
-                // Only set error state if it's not a validation error
-                // Validation errors will be handled by the form
                 if (!error.response?.data?.errors) {
                     setError(errorMessage)
                 }
@@ -151,14 +149,12 @@ export const useOrganisationUser = () => {
                 errorMessage = error.message
                 setError(errorMessage)
             }
-            
+
             toast({
                 title: 'Error',
                 description: errorMessage,
                 variant: 'destructive',
             })
-            
-            // Re-throw the error so the form can handle validation errors
             throw error
         } finally {
             setIsLoading(false)
