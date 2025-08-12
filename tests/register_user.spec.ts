@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test('should register John Nobela', async ({ page }) => {
-  await page.goto('http://localhost:3001/register')
+  await page.goto(`${process.env.NEXT_PUBLIC_URL}/register`)
 
   await page.getByTestId('input-name').fill('John')
   await page.getByTestId('input-last-name').fill('Nobela')
