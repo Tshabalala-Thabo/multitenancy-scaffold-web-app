@@ -1,6 +1,5 @@
 'use client'
 
-import type React from 'react'
 import {
     useRef,
     useState,
@@ -9,15 +8,16 @@ import {
     useImperativeHandle,
     forwardRef,
 } from 'react'
-import { extractValidationErrors } from '@/types/api-error'
-import { useOrganisationUser } from '@/hooks/useOrganisationUser'
-import type { OrganizationSettings } from '@/types/organisation'
-import { Button } from '@/components/ui/button'
+import type React from 'react'
+import Alert from '@/components/Alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { BasicInfoData } from '@/hooks/useOrganisationUser'
-import Alert from '@/components/Alert'
+import { extractValidationErrors } from '@/types/api-error'
+import type { OrganizationSettings } from '@/types/organisation'
+import { useOrganisationUser } from '@/hooks/useOrganisationUser'
 
 interface BasicInfoFormProps {
     initialSettings: OrganizationSettings
@@ -147,7 +147,6 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
 
         const clearFieldError = (fieldName: string) => {
             setFieldErrors(prev => {
-                // Create a new object without the field to clear
                 const { [fieldName]: ignored, ...rest } = prev
                 void ignored
                 return rest

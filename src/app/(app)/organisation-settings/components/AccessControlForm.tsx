@@ -2,7 +2,6 @@
 
 import type React from 'react'
 import { useState, useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { extractValidationErrors } from '@/types/api-error'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
 import type { OrganizationSettings } from '@/types/organisation'
@@ -11,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert } from '@/components/Alert'
+import Alert from '@/components/Alert'
 
 type ValidationErrors = Record<string, string | string[]>
 
@@ -33,6 +32,8 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
         const [showWarning, setShowWarning] = useState(false)
         const [internalPulse, setInternalPulse] = useState(false)
         const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+        const [formUpdated, setFormUpdated] = useState(false)
+
 
         const [formData, setFormData] = useState({
             privacy_setting: initialSettings.privacy_setting,
@@ -104,7 +105,8 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
 
         const clearFieldError = (fieldName: string) => {
             setFieldErrors(prev => {
-                const { [fieldName]: _, ...rest } = prev
+                const { [fieldName]: ignored, ...rest } = prev
+                void ignored
                 return rest
             })
         }
@@ -154,7 +156,7 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
             setFieldErrors({})
         }
 
-        const handleInputChange = (field: string, value: any) => {
+        const handleInputChange = (field: string, value: string | number | boolean) => {
             setFormData(prev => ({
                 ...prev,
                 [field]: value
@@ -162,7 +164,7 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
             clearFieldError(field)
         }
 
-        const handlePasswordPolicyChange = (field: string, value: any) => {
+        const handlePasswordPolicyChange = (field: keyof OrganizationSettings['password_policy'], value: string | number | boolean) => {
             setFormData(prev => ({
                 ...prev,
                 password_policy: {
@@ -184,7 +186,6 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
             try {
                 await updateAccessControl(initialSettings.id, formData)
 
-                // Update initial values to current values after successful save
                 if (pulseTimeoutRef.current) {
                     clearTimeout(pulseTimeoutRef.current)
                     pulseTimeoutRef.current = null
@@ -192,13 +193,12 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
 
                 setInitialValues({ ...formData })
                 setIsDirty(false)
-
-                // Show success message (handled by the hook)
-            } catch (error: any) {
-                if (error.response?.data?.errors) {
-                    setFieldErrors(extractValidationErrors(error.response.data.errors))
+                setFormUpdated(true)
+            } catch (error) {
+                const validationErrors = extractValidationErrors(error)
+                if (validationErrors) {
+                    setFieldErrors(validationErrors)
                 }
-                // Error toast is handled by the hook
             } finally {
                 setIsSubmitting(false)
                 setInternalPulse(false)
@@ -208,14 +208,15 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
 
         return (
             <form onSubmit={handleSubmit} className="grid gap-6">
-                {fieldErrors.general && (
-                    <Alert variant="destructive" title="Error" description={fieldErrors.general as string} />
+                {formUpdated && (
+                    <Alert
+                        variant="info"
+                        title=" Please note that the changes might take a few minutes to reflect."
+                    />
                 )}
-
                 <div className="grid gap-2">
                     <Label htmlFor="privacy_setting">Organization Privacy</Label>
                     <Select
-                        id="privacy_setting"
                         value={formData.privacy_setting}
                         onValueChange={(value: 'public' | 'private') => handleInputChange('privacy_setting', value)}
                     >

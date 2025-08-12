@@ -297,7 +297,6 @@ export const useOrganisationUser = () => {
                 variant: 'default',
             })
 
-            return updatedData
         } catch (error: unknown) {
             let errorMessage = 'Failed to update access control settings'
 
