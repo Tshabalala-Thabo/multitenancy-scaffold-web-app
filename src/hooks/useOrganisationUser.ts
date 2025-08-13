@@ -18,6 +18,18 @@ export interface BasicInfoData {
     }
 }
 
+export interface AccessControlData {
+    privacy_setting: 'public' | 'private'
+    two_factor_auth_required: boolean
+    password_policy: {
+        min_length: number
+        requires_uppercase: boolean
+        requires_lowercase: boolean
+        requires_number: boolean
+        requires_symbol: boolean
+    }
+}
+
 export const useOrganisationUser = () => {
     const router = useRouter()
     const { mutate } = useAuth()
@@ -251,6 +263,64 @@ export const useOrganisationUser = () => {
         }
     }
 
+    const updateAccessControl = async (
+        organizationId: number,
+        data: AccessControlData,
+    ) => {
+        setIsLoading(true)
+        setError(null)
+
+        try {
+            const response = await axios.post(
+                `/api/tenants/${organizationId}/access-control`,
+                data,
+            )
+
+            const updatedData = response.data
+
+            setOrganisationSettings(prev => {
+                if (!prev) return null
+                return {
+                    ...prev,
+                    privacy_setting: updatedData.privacy_setting ?? prev.privacy_setting,
+                    two_factor_auth_required: updatedData.two_factor_auth_required ?? prev.two_factor_auth_required,
+                    password_policy: {
+                        ...prev.password_policy,
+                        ...(updatedData.password_policy || {}),
+                    },
+                }
+            })
+
+            toast({
+                title: 'Success!',
+                description: 'Access control settings updated successfully.',
+                variant: 'default',
+            })
+
+        } catch (error: unknown) {
+            let errorMessage = 'Failed to update access control settings'
+
+            if (isApiErrorResponse(error)) {
+                errorMessage = error.response?.data?.message || errorMessage
+                if (!error.response?.data?.errors) {
+                    setError(errorMessage)
+                }
+            } else if (error instanceof Error) {
+                errorMessage = error.message
+                setError(errorMessage)
+            }
+
+            toast({
+                title: 'Error',
+                description: errorMessage,
+                variant: 'destructive',
+            })
+            throw error
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return {
         organisationSettings,
         isLoading,
@@ -258,6 +328,7 @@ export const useOrganisationUser = () => {
         fetchOrganisationSettings,
         updateSettings,
         updateBasicInfo,
+        updateAccessControl,
         joinOrganisation,
         switchOrganisation,
         leaveOrganisation,
