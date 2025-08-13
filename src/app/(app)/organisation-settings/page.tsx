@@ -16,16 +16,16 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect, useState, useRef } from 'react'
 import { PermissionMatrix } from './components/PermissionMatrix'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
-import { AccessControlForm } from './components/AccessControlForm'
 import { BasicInfoForm, BasicInfoFormRef } from './components/BasicInfoForm'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AccessControlForm, AccessControlFormRef } from './components/AccessControlForm'
 
 export default function OrganizationSettingsPage() {
     const { user } = useAuth()
     const [isFormDirty, setIsFormDirty] = useState(false)
     const [activeTab, setActiveTab] = useState("basic-info")
     const basicInfoFormRef = useRef<BasicInfoFormRef>(null)
-    const accessControlFormRef = useRef<BasicInfoFormRef>(null)
+    const accessControlFormRef = useRef<AccessControlFormRef>(null)
 
     const {
         organisationSettings,

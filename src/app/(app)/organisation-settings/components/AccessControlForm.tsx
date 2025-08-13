@@ -24,7 +24,7 @@ export interface AccessControlFormRef {
 }
 
 export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlFormProps>(
-    ({  initialSettings, onDirtyChange }, ref) => {
+    ({ initialSettings, onDirtyChange }, ref) => {
         const { updateAccessControl } = useOrganisationUser()
         const [isSubmitting, setIsSubmitting] = useState(false)
         const [isDirty, setIsDirty] = useState(false)
@@ -34,32 +34,15 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
         const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
         const [formUpdated, setFormUpdated] = useState(false)
 
-
-        const [formData, setFormData] = useState({
-            privacy_setting: initialSettings.privacy_setting,
-            two_factor_auth_required: initialSettings.two_factor_auth_required,
-            password_policy: {
-                min_length: initialSettings.password_policy.min_length,
-                requires_uppercase: initialSettings.password_policy.requires_uppercase,
-                requires_lowercase: initialSettings.password_policy.requires_lowercase,
-                requires_number: initialSettings.password_policy.requires_number,
-                requires_symbol: initialSettings.password_policy.requires_symbol,
-            },
+        const createInitialState = (settings: OrganizationSettings) => ({
+            privacy_setting: settings.privacy_setting,
+            two_factor_auth_required: settings.two_factor_auth_required,
+            password_policy: { ...settings.password_policy },
             _method: 'PUT',
         })
 
-        const [initialValues, setInitialValues] = useState({
-            privacy_setting: initialSettings.privacy_setting,
-            two_factor_auth_required: initialSettings.two_factor_auth_required,
-            password_policy: {
-                min_length: initialSettings.password_policy.min_length,
-                requires_uppercase: initialSettings.password_policy.requires_uppercase,
-                requires_lowercase: initialSettings.password_policy.requires_lowercase,
-                requires_number: initialSettings.password_policy.requires_number,
-                requires_symbol: initialSettings.password_policy.requires_symbol,
-            },
-            _method: 'PUT',
-        })
+        const [formData, setFormData] = useState(() => createInitialState(initialSettings))
+        const [initialValues, setInitialValues] = useState(() => createInitialState(initialSettings))
 
         useImperativeHandle(
             ref,
@@ -309,11 +292,10 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
                             <Button
                                 type="button"
                                 variant="outline"
-                                className={`flex-1 transition-all duration-300 ${
-                                    internalPulse
+                                className={`flex-1 transition-all duration-300 ${internalPulse
                                         ? 'animate-pulse border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/75'
                                         : ''
-                                }`}
+                                    }`}
                                 onClick={handleCancel}
                                 disabled={isSubmitting}
                             >
@@ -321,11 +303,10 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
                             </Button>
                             <Button
                                 type="submit"
-                                className={`flex-1 transition-all duration-300 ${
-                                    internalPulse
+                                className={`flex-1 transition-all duration-300 ${internalPulse
                                         ? 'animate-pulse border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/75'
                                         : ''
-                                }`}
+                                    }`}
                                 disabled={isSubmitting || !isDirty}
                             >
                                 {isSubmitting ? "Saving..." : "Save Changes"}
