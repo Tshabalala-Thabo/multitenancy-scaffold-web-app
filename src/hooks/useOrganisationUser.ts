@@ -282,11 +282,11 @@ export const useOrganisationUser = () => {
                 if (!prev) return null
                 return {
                     ...prev,
-                    privacy_setting: updatedData.privacy_setting,
-                    two_factor_auth_required: updatedData.two_factor_auth_required,
+                    privacy_setting: updatedData.privacy_setting ?? prev.privacy_setting,
+                    two_factor_auth_required: updatedData.two_factor_auth_required ?? prev.two_factor_auth_required,
                     password_policy: {
                         ...prev.password_policy,
-                        ...updatedData.password_policy,
+                        ...(updatedData.password_policy || {}),
                     },
                 }
             })
