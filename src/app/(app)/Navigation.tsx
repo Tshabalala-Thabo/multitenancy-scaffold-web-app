@@ -29,14 +29,13 @@ import {
 } from 'lucide-react'
 import { User as UserType } from '@/hooks/auth'
 import { useRouter } from 'next/navigation'
-import useOrganisationUser from '@/hooks/useOrganisationUser'
+import { useOrganisationAccess } from '@/hooks/useOrganisationAccess'
 import usePermissions from '@/hooks/usePermissions'
 
 interface NavigationProps {
     user: UserType
 }
 
-// Helper function to generate avatar initials
 const generateAvatar = (name: string): string => {
     return name
         .split(' ')
@@ -45,32 +44,19 @@ const generateAvatar = (name: string): string => {
         .toUpperCase()
 }
 
-// Helper function to get user's role for a specific tenant
 const getUserRole = (user: UserType, tenantId: number): string => {
     const role = user.roles.find(role => role.tenant_id === tenantId)
     return role ? role.name : 'member'
 }
 
-// Helper function to check if user has a specific permission for the current tenant
-const hasPermission = (user: UserType, permission: string): boolean => {
-    return (
-        user.permissions?.some(
-            perm =>
-                perm.name === permission && perm.tenant_id === user.tenant_id,
-        ) ?? false
-    )
-}
-
 const Navigation: React.FC<NavigationProps> = ({ user }) => {
     const { logout } = useAuth()
     const router = useRouter()
-    const { switchOrganisation } = useOrganisationUser()
+    const { switchOrganisation } = useOrganisationAccess()
     const [isSwitching, setIsSwitching] = useState<boolean>(false)
     const userRoles = user.roles.map(role => role.name)
     const { canManageSettings, isSuperAdmin } = usePermissions()
-    const pathname = usePathname()
 
-    // Transform user organizations to match the dropdown format
     const organizations = useMemo(() => {
         return user.organisations.map(org => ({
             id: org.id,
@@ -81,9 +67,7 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
         }))
     }, [user])
 
-    console.log(user)
 
-    // Find the currently selected organization based on current_tenant_id
     const selectedOrg = useMemo(() => {
         return (
             organizations.find(org => org.id === user.tenant_id) ||
@@ -100,30 +84,23 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
             setIsSwitching(true)
             const success = await switchOrganisation(org.id)
             if (success) {
-                // Refresh the page to update the UI with the new organization
                 window.location.reload()
             }
-        } catch (error) {
-            console.error('Failed to switch organization:', error)
         } finally {
             setIsSwitching(false)
         }
     }
 
-    // Check if user has organizations to determine what to show on the left
     const hasOrganizations = organizations.length > 0
 
     return (
         <nav className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
-            {/* Primary Navigation Menu */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center space-x-8">
-                        {/* Logo or Organization Selector */}
                         <div className="flex-shrink-0 flex items-center">
                             {hasOrganizations ? (
                                 organizations.length > 1 ? (
-                                    // Dropdown when user has multiple organizations
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
@@ -209,7 +186,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 ) : (
-                                    // Static display when user has only one organization
                                     <div className="flex items-center space-x-2 px-3 py-2">
                                         <Avatar className="w-8 h-8">
                                             {selectedOrg?.logo_url ? (
@@ -234,7 +210,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                     </div>
                                 )
                             ) : (
-                                // Original Logo when user has no organizations
                                 <Link
                                     href="/dashboard"
                                     className="flex items-center space-x-2 group">
@@ -246,7 +221,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                             )}
                         </div>
 
-                        {/* Navigation Links */}
                         <div className="hidden md:flex items-center space-x-6">
                             <NavLink
                                 href="/dashboard"
@@ -258,7 +232,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                                 active={usePathname() === '/announcements'}>
                                 Announcements
                             </NavLink>
-                            {/* Organisation Settings - Only show if user has settings:manage permission */}
                             {canManageSettings() && (
                                 <NavLink
                                     href="/organisation-settings"
@@ -282,14 +255,11 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                         </div>
                     </div>
 
-                    {/* Right side items */}
                     <div className="flex items-center space-x-4">
-                        {/* Search Button - Hidden on mobile */}
                         <button className="hidden md:flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200">
                             <Search className="w-5 h-5" />
                         </button>
 
-                        {/* User Profile Dropdown */}
                         <div className="hidden sm:flex sm:items-center">
                             <Dropdown
                                 align="right"
@@ -342,7 +312,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                             </Dropdown>
                         </div>
 
-                        {/* Mobile Hamburger */}
                         <div className="flex items-center md:hidden">
                             <button
                                 onClick={() => setOpen(open => !open)}
@@ -376,7 +345,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                 </div>
             </div>
 
-            {/* Enhanced Responsive Navigation Menu */}
             {open && (
                 <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
                     <div className="px-4 pt-2 pb-3 space-y-1">
@@ -390,7 +358,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                             active={usePathname() === '/announcements'}>
                             Announcements
                         </ResponsiveNavLink>
-                        {/* Organisation Settings - Only show if user has settings:manage permission */}
                         {canManageSettings() && (
                             <ResponsiveNavLink
                                 href="/organisation-settings"
@@ -409,7 +376,6 @@ const Navigation: React.FC<NavigationProps> = ({ user }) => {
                         </ResponsiveNavLink>
                     </div>
 
-                    {/* Enhanced Responsive User Section */}
                     <div className="pt-4 pb-1 border-t border-gray-200 bg-gray-50">
                         <div className="flex items-center px-4 py-3">
                             <Avatar className="w-12 h-12 shadow-sm">

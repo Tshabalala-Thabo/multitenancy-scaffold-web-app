@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils"
 import { Loader2, Users } from "lucide-react"
 import { useAuth } from "@/hooks/auth"
-import { useOrganisationUser } from "@/hooks/useOrganisationUser"
+import { useOrganisationAccess } from "@/hooks/useOrganisationAccess"
 
 const getInitials = (name: string) => {
     return name
@@ -39,7 +39,7 @@ export default function MyOrganizations(
     const [activeOrganizationId, setActiveOrganizationId] = useState<number | null>(user?.tenant_id || null)
     const [leavingOrgId, setLeavingOrgId] = useState<number | null>(null)
     const [switchingOrgId, setSwitchingOrgId] = useState<number | null>(null)
-    const { switchOrganisation, leaveOrganisation } = useOrganisationUser()
+    const { switchOrganisation, leaveOrganisation } = useOrganisationAccess()
 
     useEffect(() => {
         setActiveOrganizationId(user?.tenant_id || null)
