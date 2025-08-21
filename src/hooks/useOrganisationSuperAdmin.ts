@@ -84,118 +84,7 @@ export const useOrganisationSuperAdmin = () => {
         }
     }
 
-    const handleSaveOrganization = async (
-        organizationData: Partial<Organisation>,
-    ) => {
-        setIsLoading(true)
-        try {
-            let response
 
-            if (editingOrganization) {
-                // Update existing organization
-                if (organizationData.logo instanceof File) {
-                    const formData = createFormData(organizationData, true)
-                    response = await axios.post(
-                        `/api/tenants/${editingOrganization.id}`,
-                        formData,
-                        {
-                            headers: { 'Content-Type': 'multipart/form-data' },
-                        },
-                    )
-                } else {
-                    const { logo, logo_preview, ...dataWithoutLogo } =
-                        organizationData
-                    response = await axios.put(
-                        `/api/tenants/${editingOrganization.id}`,
-                        dataWithoutLogo,
-                    )
-                }
-            } else {
-                // Create new organization
-                if (organizationData.logo instanceof File) {
-                    const formData = createFormData(organizationData, false)
-                    response = await axios.post('/api/tenants', formData, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                    })
-                } else {
-                    const { logo, logo_preview, ...dataWithoutLogo } =
-                        organizationData
-                    response = await axios.post('/api/tenants', dataWithoutLogo)
-                }
-            }
-
-            await fetchOrganizations() // Refresh the list
-            setIsModalOpen(false)
-
-            toast({
-                title: 'Success',
-                description: `Organization ${editingOrganization ? 'updated' : 'created'} successfully`,
-                variant: 'default',
-            })
-        } catch (error) {
-            toast({
-                title: 'Error',
-                description:
-                    error.response?.data?.message ||
-                    'Failed to save organization',
-                variant: 'destructive',
-            })
-        } finally {
-            setIsLoading(false)
-        }
-    }
-    const createFormData = (data: Partial<Organisation>, isUpdate: boolean) => {
-        const formData = new FormData()
-
-        Object.entries(data).forEach(([key, value]) => {
-            if (key !== 'logo' && key !== 'logo_preview') {
-                if (
-                    key === 'address' &&
-                    typeof value === 'object' &&
-                    value !== null
-                ) {
-                    Object.entries(value).forEach(
-                        ([addressKey, addressValue]) => {
-                            formData.append(
-                                `address[${addressKey}]`,
-                                String(addressValue),
-                            )
-                        },
-                    )
-                } else if (key === 'administrators' && Array.isArray(value)) {
-                    value.forEach((admin, index) => {
-                        Object.entries(admin).forEach(
-                            ([adminKey, adminValue]) => {
-                                formData.append(
-                                    `administrators[${index}][${adminKey}]`,
-                                    String(adminValue),
-                                )
-                            },
-                        )
-                    })
-                } else if (typeof value === 'object' && value !== null) {
-                    formData.append(key, JSON.stringify(value))
-                } else {
-                    formData.append(key, String(value))
-                }
-            }
-        })
-
-        if (data.logo instanceof File) {
-            formData.append('logo', data.logo)
-        }
-
-        if (isUpdate) {
-            formData.append('_method', 'PUT')
-            if ('remove_logo' in data && data.remove_logo === true) {
-                formData.append('remove_logo', '1')
-            } else {
-                formData.append('remove_logo', '0')
-            }
-        }
-
-        return formData
-    }
 
     return {
         organizations,
@@ -212,7 +101,6 @@ export const useOrganisationSuperAdmin = () => {
         handleViewOrganization,
         handleBackToList,
         handleDeleteOrganization,
-        handleSaveOrganization,
         isLoading: isLoading || coreLoading,
         refetchOrganizations: fetchOrganizations,
     }

@@ -11,7 +11,7 @@ import {
 } from 'react'
 import { extractValidationErrors } from '@/types/api-error'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
-import type { OrganizationSettings } from '@/types/organisation'
+import type { OrganisationSettings } from '@/types/organisation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +20,7 @@ import { BasicInfoData } from '@/hooks/useOrganisationUser'
 import Alert from '@/components/Alert'
 
 interface BasicInfoFormProps {
-    initialSettings: OrganizationSettings
+    initialSettings: OrganisationSettings
     onDirtyChange?: (isDirty: boolean) => void
 }
 
@@ -147,7 +147,6 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
 
         const clearFieldError = (fieldName: string) => {
             setFieldErrors(prev => {
-                // Create a new object without the field to clear
                 const { [fieldName]: ignored, ...rest } = prev
                 void ignored
                 return rest

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BasicInfoForm, BasicInfoFormRef } from './components/BasicInfoForm'
-import { AccessControlForm } from './components/AccessControlForm'
+import { AccessControlForm, AccessControlFormRef } from './components/AccessControlForm'
 import Header from '@/components/Header'
 import { PermissionMatrix } from './components/PermissionMatrix'
 import { useOrganisationUser } from '@/hooks/useOrganisationUser'
@@ -21,12 +21,10 @@ export default function OrganizationSettingsPage() {
     const [isFormDirty, setIsFormDirty] = useState(false)
     const [activeTab, setActiveTab] = useState("basic-info")
     const basicInfoFormRef = useRef<BasicInfoFormRef>(null)
-
+    const accessControlFormRef = useRef<AccessControlFormRef>(null)
     const {
         organisationSettings,
         isLoading,
-        error,
-        updateSettings,
         fetchOrganisationSettings
     } = useOrganisationUser()
 
@@ -73,6 +71,7 @@ export default function OrganizationSettingsPage() {
                         if (isFormDirty) {
                             // Trigger button pulsing using the ref
                             basicInfoFormRef.current?.triggerPulse()
+                            accessControlFormRef.current?.triggerPulse()
                             // Don't change the tab
                             return
                         } else {
@@ -117,7 +116,6 @@ export default function OrganizationSettingsPage() {
                             </CardHeader>
                             <CardContent>
                                 <AccessControlForm
-                                    orgId={organizationId}
                                     initialSettings={organisationSettings}
                                 />
                             </CardContent>
