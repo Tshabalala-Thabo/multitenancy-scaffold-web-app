@@ -10,13 +10,13 @@ import {
     forwardRef,
 } from 'react'
 import { extractValidationErrors } from '@/types/api-error'
-import { useOrganisationUser } from '@/hooks/useOrganisationUser'
+import { useOrganisationSettings } from '@/hooks/useOrganisationSettings'
 import type { OrganisationSettings } from '@/types/organisation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ImageUpload } from '@/components/ui/image-upload'
-import { BasicInfoData } from '@/hooks/useOrganisationUser'
+import { BasicInfoData } from '@/hooks/useOrganisationSettings'
 import Alert from '@/components/Alert'
 
 interface BasicInfoFormProps {
@@ -56,7 +56,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
         const [showWarning, setShowWarning] = useState(false)
         const [internalPulse, setInternalPulse] = useState(false)
         const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-        const { updateBasicInfo } = useOrganisationUser()
+        const { updateBasicInfo } = useOrganisationSettings()
         const [formUpdated, setFormUpdated] = useState(false)
         const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({})
 

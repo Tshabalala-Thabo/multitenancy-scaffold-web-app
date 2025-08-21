@@ -11,7 +11,7 @@ import { BasicInfoForm, BasicInfoFormRef } from './components/BasicInfoForm'
 import { AccessControlForm, AccessControlFormRef } from './components/AccessControlForm'
 import Header from '@/components/Header'
 import { PermissionMatrix } from './components/PermissionMatrix'
-import { useOrganisationUser } from '@/hooks/useOrganisationUser'
+import { useOrganisationSettings } from '@/hooks/useOrganisationSettings'
 import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '@/hooks/auth'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -26,7 +26,7 @@ export default function OrganizationSettingsPage() {
         organisationSettings,
         isLoading,
         fetchOrganisationSettings
-    } = useOrganisationUser()
+    } = useOrganisationSettings()
 
     const organizationId = user?.tenant_id
 
@@ -71,7 +71,7 @@ export default function OrganizationSettingsPage() {
                         if (isFormDirty) {
                             // Trigger button pulsing using the ref
                             basicInfoFormRef.current?.triggerPulse()
-                            accessControlFormRef.current?.triggerPulse()
+                            accessControlFormRef.current?.triggerPulse() // TODO : Fix this later
                             // Don't change the tab
                             return
                         } else {

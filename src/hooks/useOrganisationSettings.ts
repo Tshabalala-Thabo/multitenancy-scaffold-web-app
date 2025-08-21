@@ -34,7 +34,7 @@ export const useOrganisationSettings = () => {
     const [error, setError] = useState<string | null>(null)
     const { toast } = useToast()
 
-    const fetchOrganizationSettings = useCallback(async (organizationId: number) => {
+    const fetchOrganisationSettings = useCallback(async (organizationId: number) => {
         setIsLoading(true)
         setError(null)
         try {
@@ -55,33 +55,6 @@ export const useOrganisationSettings = () => {
             setIsLoading(false)
         }
     }, [toast])
-
-    const updateSettings = async (organisationId: number, updatedSettings: Partial<OrganisationSettings>) => {
-        setIsLoading(true)
-        setError(null)
-        try {
-            const response = await axios.put(`/api/tenants/${organisationId}/settings`, updatedSettings)
-            const data = response.data
-            setOrganisationSettings(data)
-            toast({
-                title: 'Success!',
-                description: 'Organization settings updated successfully.',
-                variant: 'default',
-            })
-            return data
-        } catch (err: any) {
-            const errorMessage = err.response?.data?.message || 'Failed to update organisation settings'
-            setError(errorMessage)
-            toast({
-                title: 'Error',
-                description: errorMessage,
-                variant: 'destructive',
-            })
-            throw err
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const updateBasicInfo = async (organisationId: number, data: BasicInfoData | FormData) => {
         setIsLoading(true)
@@ -194,8 +167,8 @@ export const useOrganisationSettings = () => {
         updateAccessControl,
         isLoading,
         error,
-        fetchOrganizationSettings,
-        updateSettings,
+        fetchOrganisationSettings,
+        organisationSettings,
         updateBasicInfo,
     }
 }
