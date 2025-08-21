@@ -18,7 +18,7 @@ test.describe('Organisation Management Single Flow', () => {
       const slug = org.name.toLowerCase().replace(/\s+/g, '-');
 
       // Open modal
-      await page.click('button:has-text("Create Organisation")');
+      await page.click('button:has-text("Create New Organisation")');
       const modal = page.locator('[role="dialog"]');
       await expect(modal).toBeVisible();
 

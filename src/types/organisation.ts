@@ -38,7 +38,7 @@ export interface Organisation {
 }
 
 
-export interface OrganizationSettings {
+export interface OrganisationSettings {
     id: number
     name: string
     description: string | null
