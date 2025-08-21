@@ -1,34 +1,108 @@
 import axios from '@/lib/axios'
 import { useToast } from '@/hooks/use-toast'
-import { useState, useCallback } from 'react'
+import { useAuth } from '@/hooks/auth'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { isApiErrorResponse } from '@/types/api-error'
 
+// Updated interface to match API response
+export interface ApiRole {
+    id: number
+    tenant_id: number
+    name: string
+    guard_name: string
+    is_custom: number
+    created_at: string
+    updated_at: string
+    pivot: {
+        model_type: string
+        model_id: number
+        role_id: number
+        tenant_id: number
+    }
+}
+
+export interface ApiOrganizationUser {
+    id: number
+    name: string
+    last_name: string
+    email: string
+    email_verified_at: string | null
+    created_at: string
+    updated_at: string
+    current_tenant_id: number
+    pivot: {
+        tenant_id: number
+        user_id: number
+        created_at: string
+        updated_at: string
+    }
+    roles: ApiRole[]
+}
+
+// Transformed interface for UI consumption
 export interface OrganizationUser {
     id: number
     name: string
+    last_name: string
     email: string
-    role: string
-    status: 'active' | 'pending' | 'inactive'
-    joined_at: string
-    last_active?: string
+    avatar_url?: string
+    roles: string[]
+    join_date: string
+    last_activity?: string
+    status?: 'active' | 'pending' | 'inactive' | 'suspended'
 }
 
 export const useOrganisationUsers = () => {
+    const { user } = useAuth()
     const [users, setUsers] = useState<OrganizationUser[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const { toast } = useToast()
+    const hasInitialized = useRef(false)
 
-    const fetchOrganizationUsers = useCallback(async (organizationId: number) => {
+    const organizationId = user?.tenant_id
+
+    // Transform API data to UI format
+    const transformApiUser = (apiUser: ApiOrganizationUser): OrganizationUser => {
+        return {
+            id: apiUser.id,
+            name: apiUser.name,
+            last_name: apiUser.last_name,
+            email: apiUser.email,
+            avatar_url: '/placeholder.svg?height=32&width=32', // Default avatar
+            roles: apiUser.roles.map(role => role.name),
+            join_date: apiUser.pivot.created_at,
+            last_activity: apiUser.updated_at,
+            status: undefined, // Leave undefined as requested
+        }
+    }
+
+    const fetchOrganizationUsers = useCallback(async (orgId?: number) => {
+        const targetOrgId = orgId || organizationId
+        if (!targetOrgId) return []
+
         setIsLoading(true)
         setError(null)
         try {
-            const response = await axios.get(`/api/tenants/${organizationId}/users`)
-            const data = response.data
-            setUsers(data)
-            return data
-        } catch (err: any) {
-            const errorMessage = err.response?.data?.message || 'Failed to fetch organization users'
-            setError(errorMessage)
+            const response = await axios.get(`/api/tenants/${targetOrgId}/users`)
+            const apiUsers: ApiOrganizationUser[] = response.data
+
+            // Transform API data to UI format
+            const transformedUsers = apiUsers.map(transformApiUser)
+
+            setUsers(transformedUsers)
+            return transformedUsers
+        } catch (err: unknown) {
+            let errorMessage = 'Failed to fetch users'
+            if (isApiErrorResponse(err)) {
+                errorMessage = err.response?.data?.message || errorMessage
+                if (!err.response?.data?.errors) {
+                    setError(errorMessage)
+                }
+            } else if (err instanceof Error) {
+                errorMessage = err.message
+                setError(errorMessage)
+            }
             toast({
                 title: 'Error',
                 description: errorMessage,
@@ -38,9 +112,33 @@ export const useOrganisationUsers = () => {
         } finally {
             setIsLoading(false)
         }
-    }, [toast])
+    }, [organizationId, toast])
 
-    const inviteUser = async (organizationId: number, email: string, role: string = 'member') => {
+    // Auto-fetch users when user is authenticated and has tenant_id
+    useEffect(() => {
+        if (organizationId && !hasInitialized.current) {
+            hasInitialized.current = true
+            fetchOrganizationUsers()
+        }
+    }, [organizationId, fetchOrganizationUsers])
+
+    // Reset when organizationId changes (if user switches organizations)
+    useEffect(() => {
+        hasInitialized.current = false
+        setUsers([])
+        setError(null)
+    }, [organizationId])
+
+    const inviteUser = async (email: string, role: string = 'member') => {
+        if (!organizationId) {
+            toast({
+                title: 'Error',
+                description: 'No organization found. Please ensure you are logged in.',
+                variant: 'destructive',
+            })
+            return
+        }
+
         setIsLoading(true)
         try {
             const response = await axios.post(`/api/tenants/${organizationId}/users/invite`, {
@@ -55,7 +153,7 @@ export const useOrganisationUsers = () => {
             })
 
             // Refresh users list
-            await fetchOrganizationUsers(organizationId)
+            await fetchOrganizationUsers()
             return response.data
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to invite user'
@@ -70,7 +168,16 @@ export const useOrganisationUsers = () => {
         }
     }
 
-    const updateUserRole = async (organizationId: number, userId: number, role: string) => {
+    const updateUserRole = async (userId: number, role: string) => {
+        if (!organizationId) {
+            toast({
+                title: 'Error',
+                description: 'No organization found. Please ensure you are logged in.',
+                variant: 'destructive',
+            })
+            return
+        }
+
         setIsLoading(true)
         try {
             const response = await axios.put(`/api/tenants/${organizationId}/users/${userId}`, {
@@ -83,8 +190,9 @@ export const useOrganisationUsers = () => {
                 variant: 'default',
             })
 
+            // Update user roles in state
             setUsers(prev => prev.map(user =>
-                user.id === userId ? { ...user, role } : user
+                user.id === userId ? { ...user, roles: [role] } : user
             ))
 
             return response.data
@@ -101,7 +209,16 @@ export const useOrganisationUsers = () => {
         }
     }
 
-    const removeUser = async (organizationId: number, userId: number) => {
+    const removeUser = async (userId: number) => {
+        if (!organizationId) {
+            toast({
+                title: 'Error',
+                description: 'No organization found. Please ensure you are logged in.',
+                variant: 'destructive',
+            })
+            return
+        }
+
         setIsLoading(true)
         try {
             await axios.delete(`/api/tenants/${organizationId}/users/${userId}`)
@@ -130,9 +247,11 @@ export const useOrganisationUsers = () => {
         users,
         isLoading,
         error,
+        organizationId,
         fetchOrganizationUsers,
         inviteUser,
         updateUserRole,
         removeUser,
+        refetch: () => fetchOrganizationUsers(),
     }
 }

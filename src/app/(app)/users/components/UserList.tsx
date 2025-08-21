@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import type { OrgUser, OrgRole } from "@/lib/types"
+import type { OrganizationUser } from "@/hooks/useOrganisationUsers"
+import type { OrgRole } from "@/lib/types"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -39,27 +40,29 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
+import { useOrganisationUsers } from "@/hooks/useOrganisationUsers"
 
 interface UserListProps {
-    users: OrgUser[]
+    users: OrganizationUser[]
     orgRoles: OrgRole[]
     orgId: number
 }
 
-export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps) {
-    const [users, setUsers] = useState(initialUsers)
+export function UserList({ users, orgRoles, orgId }: UserListProps) {
+    const { updateUserRole, removeUser, refetch } = useOrganisationUsers()
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedUsers, setSelectedUsers] = useState<number[]>([])
     const [isChangeRolesDialogOpen, setIsChangeRolesDialogOpen] = useState(false)
     const [isBanUserDialogOpen, setIsBanUserDialogOpen] = useState(false)
-    const [currentUserForAction, setCurrentUserForAction] = useState<OrgUser | null>(null)
+    const [currentUserForAction, setCurrentUserForAction] = useState<OrganizationUser | null>(null)
     const [selectedRoles, setSelectedRoles] = useState<string[]>([])
     const [banReason, setBanReason] = useState("")
 
     const filteredUsers = users.filter(
         (user) =>
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()),
+            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.last_name.toLowerCase().includes(searchTerm.toLowerCase()),
     )
 
     const handleSelectAll = (checked: boolean) => {
@@ -70,81 +73,118 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
         setSelectedUsers((prev) => (checked ? [...prev, userId] : prev.filter((id) => id !== userId)))
     }
 
-    const handlePromoteToAdmin = async (user: OrgUser) => {
-        // Simulate API call
-        toast({ title: "Promoting user...", description: `Promoting ${user.name} to Admin.` })
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, roles: [...new Set([...u.roles, "admin"])] } : u)))
-        toast({ title: "Success", description: `${user.name} has been promoted to Admin.` })
+    const handlePromoteToAdmin = async (user: OrganizationUser) => {
+        try {
+            toast({ title: "Promoting user...", description: `Promoting ${user.name} to Administrator.` })
+            await updateUserRole(user.id, 'administrator')
+            // Refresh data to get updated state
+            await refetch()
+        } catch (error) {
+            // Error toast is already handled in the hook
+            console.error('Failed to promote user:', error)
+        }
     }
 
-    const handleDemoteFromAdmin = async (user: OrgUser) => {
-        // Simulate API call
-        toast({ title: "Demoting user...", description: `Demoting ${user.name} from Admin.` })
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setUsers((prev) =>
-            prev.map((u) => (u.id === user.id ? { ...u, roles: u.roles.filter((role) => role !== "admin") } : u)),
-        )
-        toast({ title: "Success", description: `${user.name} has been demoted from Admin.` })
+    const handleDemoteFromAdmin = async (user: OrganizationUser) => {
+        try {
+            toast({ title: "Demoting user...", description: `Demoting ${user.name} from Administrator.` })
+            await updateUserRole(user.id, 'member')
+            // Refresh data to get updated state
+            await refetch()
+        } catch (error) {
+            // Error toast is already handled in the hook
+            console.error('Failed to demote user:', error)
+        }
     }
 
-    const handleChangeRoles = (user: OrgUser) => {
+    const handleChangeRoles = (user: OrganizationUser) => {
         setCurrentUserForAction(user)
         setSelectedRoles(user.roles)
         setIsChangeRolesDialogOpen(true)
     }
 
     const submitChangeRoles = async () => {
-        if (!currentUserForAction) return
-        // Simulate API call
-        toast({ title: "Updating roles...", description: `Updating roles for ${currentUserForAction.name}.` })
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setUsers((prev) => prev.map((u) => (u.id === currentUserForAction.id ? { ...u, roles: selectedRoles } : u)))
-        toast({ title: "Success", description: `Roles for ${currentUserForAction.name} updated.` })
-        setIsChangeRolesDialogOpen(false)
-        setCurrentUserForAction(null)
-        setSelectedRoles([])
+        if (!currentUserForAction || selectedRoles.length === 0) return
+
+        try {
+            toast({ title: "Updating roles...", description: `Updating roles for ${currentUserForAction.name}.` })
+            // For now, we'll update with the first selected role since the API expects a single role
+            // You may need to modify this based on your API's capability to handle multiple roles
+            await updateUserRole(currentUserForAction.id, selectedRoles[0])
+            await refetch()
+
+            setIsChangeRolesDialogOpen(false)
+            setCurrentUserForAction(null)
+            setSelectedRoles([])
+        } catch (error) {
+            console.error('Failed to update user roles:', error)
+        }
     }
 
-    const handleSuspendUser = async (user: OrgUser) => {
-        // Simulate API call
-        toast({ title: "Suspending user...", description: `Suspending ${user.name}.` })
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: "suspended" } : u)))
-        toast({ title: "Success", description: `${user.name} has been suspended.` })
+    const handleSuspendUser = async (user: OrganizationUser) => {
+        // This would need a new API endpoint for suspending users
+        // For now, we'll show a placeholder toast
+        toast({
+            title: "Feature not implemented",
+            description: "User suspension is not yet implemented.",
+            variant: "destructive"
+        })
     }
 
-    const handleUnsuspendUser = async (user: OrgUser) => {
-        // Simulate API call
-        toast({ title: "Unsuspending user...", description: `Unsuspending ${user.name}.` })
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: "active" } : u)))
-        toast({ title: "Success", description: `${user.name} has been unsuspended.` })
+    const handleUnsuspendUser = async (user: OrganizationUser) => {
+        // This would need a new API endpoint for unsuspending users
+        toast({
+            title: "Feature not implemented",
+            description: "User unsuspension is not yet implemented.",
+            variant: "destructive"
+        })
     }
 
-    const handleRemoveUser = async (user: OrgUser) => {
-        // Simulate API call
-        toast({ title: "Removing user...", description: `Removing ${user.name}.` })
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setUsers((prev) => prev.filter((u) => u.id !== user.id))
-        toast({ title: "Success", description: `${user.name} has been removed.` })
+    const handleRemoveUser = async (user: OrganizationUser) => {
+        try {
+            toast({ title: "Removing user...", description: `Removing ${user.name} from organization.` })
+            await removeUser(user.id)
+        } catch (error) {
+            console.error('Failed to remove user:', error)
+        }
     }
 
-    const handleBanUser = (user: OrgUser) => {
+    const handleBanUser = (user: OrganizationUser) => {
         setCurrentUserForAction(user)
         setIsBanUserDialogOpen(true)
     }
 
     const submitBanUser = async () => {
         if (!currentUserForAction) return
-        // Simulate API call
-        toast({ title: "Banning user...", description: `Banning ${currentUserForAction.name}. Reason: ${banReason}` })
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setUsers((prev) => prev.map((u) => (u.id === currentUserForAction.id ? { ...u, status: "banned" } : u)))
-        toast({ title: "Success", description: `${currentUserForAction.name} has been banned.` })
+
+        // This would need a new API endpoint for banning users
+        toast({
+            title: "Feature not implemented",
+            description: "User banning is not yet implemented.",
+            variant: "destructive"
+        })
+
         setIsBanUserDialogOpen(false)
         setCurrentUserForAction(null)
         setBanReason("")
+    }
+
+    const getStatusVariant = (status?: string) => {
+        switch (status) {
+            case "active":
+                return "default"
+            case "suspended":
+                return "outline"
+            case "inactive":
+                return "secondary"
+            default:
+                return "secondary"
+        }
+    }
+
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'N/A'
+        return new Date(dateString).toLocaleDateString()
     }
 
     return (
@@ -181,13 +221,13 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[40px]">
-                                <Checkbox
-                                    checked={selectedUsers.length === users.length && users.length > 0}
-                                    onCheckedChange={handleSelectAll}
-                                    aria-label="Select all users"
-                                />
-                            </TableHead>
+                            {/*<TableHead className="w-[40px]">*/}
+                            {/*    <Checkbox*/}
+                            {/*        checked={selectedUsers.length === users.length && users.length > 0}*/}
+                            {/*        onCheckedChange={handleSelectAll}*/}
+                            {/*        aria-label="Select all users"*/}
+                            {/*    />*/}
+                            {/*</TableHead>*/}
                             <TableHead>User</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Roles</TableHead>
@@ -201,25 +241,25 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                         {filteredUsers.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                                    No users found.
+                                    {searchTerm ? "No users found matching your search." : "No users found."}
                                 </TableCell>
                             </TableRow>
                         )}
                         {filteredUsers.map((user) => (
                             <TableRow key={user.id}>
-                                <TableCell>
-                                    <Checkbox
-                                        checked={selectedUsers.includes(user.id)}
-                                        onCheckedChange={(checked: boolean) => handleSelectUser(user.id, checked)}
-                                        aria-label={`Select user ${user.name}`}
-                                    />
-                                </TableCell>
+                                {/*<TableCell>*/}
+                                {/*    <Checkbox*/}
+                                {/*        checked={selectedUsers.includes(user.id)}*/}
+                                {/*        onCheckedChange={(checked: boolean) => handleSelectUser(user.id, checked)}*/}
+                                {/*        aria-label={`Select user ${user.name}`}*/}
+                                {/*    />*/}
+                                {/*</TableCell>*/}
                                 <TableCell>
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage
                                                 src={user.avatar_url || "/placeholder.svg?height=32&width=32&query=User avatar"}
-                                                alt={user.name}
+                                                alt={`${user.name} ${user.last_name}`}
                                             />
                                             <AvatarFallback>
                                                 {user.name.charAt(0)}
@@ -243,15 +283,11 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                                         ))}
                                     </div>
                                 </TableCell>
-                                <TableCell>{new Date(user.join_date).toLocaleDateString()}</TableCell>
-                                <TableCell>{new Date(user.last_activity).toLocaleDateString()}</TableCell>
+                                <TableCell>{formatDate(user.join_date)}</TableCell>
+                                <TableCell>{formatDate(user.last_activity)}</TableCell>
                                 <TableCell>
-                                    <Badge
-                                        variant={
-                                            user.status === "active" ? "default" : user.status === "suspended" ? "outline" : "destructive"
-                                        }
-                                    >
-                                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                                    <Badge variant={getStatusVariant(user.status)}>
+                                        {user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : 'Unknown'}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
@@ -264,7 +300,8 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            {user.roles.includes("admin") ? (
+                                            <DropdownMenuSeparator />
+                                            {user.roles.includes("administrator") ? (
                                                 <DropdownMenuItem onClick={() => handleDemoteFromAdmin(user)}>
                                                     <UserMinus className="mr-2 h-4 w-4" /> Demote from Admin
                                                 </DropdownMenuItem>
@@ -277,15 +314,18 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                                                 <UserCheck className="mr-2 h-4 w-4" /> Change Roles
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            {user.status === "suspended" ? (
-                                                <DropdownMenuItem onClick={() => handleUnsuspendUser(user)}>
-                                                    <UserCheck className="mr-2 h-4 w-4" /> Unsuspend User
-                                                </DropdownMenuItem>
-                                            ) : (
-                                                <DropdownMenuItem onClick={() => handleSuspendUser(user)}>
-                                                    <UserX className="mr-2 h-4 w-4" /> Suspend User
-                                                </DropdownMenuItem>
-                                            )}
+                                            {/*{user.status === "suspended" ? (*/}
+                                            {/*    <DropdownMenuItem onClick={() => handleUnsuspendUser(user)}>*/}
+                                            {/*        <UserCheck className="mr-2 h-4 w-4" /> Unsuspend User*/}
+                                            {/*    </DropdownMenuItem>*/}
+                                            {/*) : (*/}
+                                            {/*    <DropdownMenuItem onClick={() => handleSuspendUser(user)}>*/}
+                                            {/*        <UserX className="mr-2 h-4 w-4" /> Suspend User*/}
+                                            {/*    </DropdownMenuItem>*/}
+                                            {/*)}*/}
+                                            <DropdownMenuItem onClick={() => handleBanUser(user)}>
+                                                <Ban className="mr-2 h-4 w-4" /> Ban User
+                                            </DropdownMenuItem>
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
                                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -296,7 +336,7 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                                                     <AlertDialogHeader>
                                                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently remove {user.name} from the
+                                                            This action cannot be undone. This will permanently remove {user.name} {user.last_name} from the
                                                             organization.
                                                         </AlertDialogDescription>
                                                     </AlertDialogHeader>
@@ -306,9 +346,6 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>
-                                            <DropdownMenuItem onClick={() => handleBanUser(user)}>
-                                                <Ban className="mr-2 h-4 w-4" /> Ban User
-                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
@@ -342,7 +379,14 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                                                 )
                                             }}
                                         />
-                                        <Label htmlFor={`role-${role.id}`}>{role.name}</Label>
+                                        <Label htmlFor={`role-${role.id}`} className="text-sm">
+                                            <div>
+                                                <div className="font-medium">{role.name}</div>
+                                                {role.description && (
+                                                    <div className="text-xs text-muted-foreground">{role.description}</div>
+                                                )}
+                                            </div>
+                                        </Label>
                                     </div>
                                 ))}
                             </div>
@@ -352,7 +396,9 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                         <Button variant="outline" onClick={() => setIsChangeRolesDialogOpen(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={submitChangeRoles}>Save changes</Button>
+                        <Button onClick={submitChangeRoles} disabled={selectedRoles.length === 0}>
+                            Save changes
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -361,7 +407,7 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
             <Dialog open={isBanUserDialogOpen} onOpenChange={setIsBanUserDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Ban User: {currentUserForAction?.name}</DialogTitle>
+                        <DialogTitle>Ban User: {currentUserForAction?.name} {currentUserForAction?.last_name}</DialogTitle>
                         <DialogDescription>
                             Permanently ban this user from the organization. Please provide a reason.
                         </DialogDescription>
@@ -381,7 +427,7 @@ export function UserList({ users: initialUsers, orgRoles, orgId }: UserListProps
                         <Button variant="outline" onClick={() => setIsBanUserDialogOpen(false)}>
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={submitBanUser}>
+                        <Button variant="destructive" onClick={submitBanUser} disabled={!banReason.trim()}>
                             Ban User
                         </Button>
                     </DialogFooter>

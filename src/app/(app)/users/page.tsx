@@ -1,4 +1,7 @@
-import type { OrgUser, PendingInvitation, OrgRole } from '@/types/user-invitation'
+'use client'
+
+import { useEffect, useState } from 'react'
+import type { PendingInvitation, OrgRole } from '@/types/user-invitation'
 import { UserList } from './components/UserList'
 import { UserInvitation } from './components/UserInvitation'
 import {
@@ -10,59 +13,11 @@ import {
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Header from '@/components/Header'
+import { useOrganisationUsers } from '@/hooks/useOrganisationUsers'
+import { Skeleton } from '@/components/ui/skeleton'
 
-// Mock data fetching functions (replace with actual API calls)
-async function getOrgUsers(orgId: number): Promise<OrgUser[]> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
-    return [
-        {
-            id: 1,
-            name: 'Alice',
-            last_name: 'Smith',
-            email: 'alice@example.com',
-            avatar_url: '/placeholder.svg?height=32&width=32',
-            roles: ['admin', 'editor'],
-            join_date: '2023-01-15',
-            last_activity: '2025-07-30',
-            status: 'active',
-        },
-        {
-            id: 2,
-            name: 'Bob',
-            last_name: 'Johnson',
-            email: 'bob@example.com',
-            avatar_url: '/placeholder.svg?height=32&width=32',
-            roles: ['viewer'],
-            join_date: '2023-03-01',
-            last_activity: '2025-07-29',
-            status: 'active',
-        },
-        {
-            id: 3,
-            name: 'Charlie',
-            last_name: 'Brown',
-            email: 'charlie@example.com',
-            avatar_url: '/placeholder.svg?height=32&width=32',
-            roles: ['editor'],
-            join_date: '2023-05-20',
-            last_activity: '2025-07-28',
-            status: 'suspended',
-        },
-        {
-            id: 4,
-            name: 'Diana',
-            last_name: 'Prince',
-            email: 'diana@example.com',
-            avatar_url: '/placeholder.svg?height=32&width=32',
-            roles: ['admin'],
-            join_date: '2023-02-10',
-            last_activity: '2025-07-30',
-            status: 'active',
-        },
-    ]
-}
-
+// Mock data fetching functions for pending invitations and roles
+// Replace these with actual API calls when available
 async function getPendingInvitations(
     orgId: number,
 ): Promise<PendingInvitation[]> {
@@ -94,7 +49,7 @@ async function getOrgRoles(orgId: number): Promise<OrgRole[]> {
     return [
         {
             id: 1,
-            name: 'admin',
+            name: 'administrator',
             description:
                 'Full access to organization settings and user management.',
             is_custom: false,
@@ -104,8 +59,8 @@ async function getOrgRoles(orgId: number): Promise<OrgRole[]> {
         },
         {
             id: 2,
-            name: 'editor',
-            description: 'Can create and manage announcements.',
+            name: 'member',
+            description: 'Standard member with limited access.',
             is_custom: false,
             permissions: [],
             created_at: '',
@@ -120,27 +75,64 @@ async function getOrgRoles(orgId: number): Promise<OrgRole[]> {
             created_at: '',
             updated_at: '',
         },
-        {
-            id: 4,
-            name: 'custom_role_1',
-            description: 'A custom role for specific tasks.',
-            is_custom: true,
-            permissions: [],
-            created_at: '',
-            updated_at: '',
-        },
     ]
 }
 
-export default async function UserManagementPage({
-                                                     params,
-                                                 }: {
+export default function UserManagementPage({
+                                               params,
+                                           }: {
     params: { orgId: string }
 }) {
     const orgId = Number.parseInt(params.orgId)
-    const users = await getOrgUsers(orgId)
-    const pendingInvitations = await getPendingInvitations(orgId)
-    const orgRoles = await getOrgRoles(orgId)
+    const {
+        users,
+        isLoading: usersLoading,
+        error: usersError,
+        fetchOrganizationUsers
+    } = useOrganisationUsers()
+
+    const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
+    const [orgRoles, setOrgRoles] = useState<OrgRole[]>([])
+    const [invitationsLoading, setInvitationsLoading] = useState(true)
+    const [rolesLoading, setRolesLoading] = useState(true)
+
+    useEffect(() => {
+        // Load pending invitations
+        const loadInvitations = async () => {
+            try {
+                const invitations = await getPendingInvitations(orgId)
+                setPendingInvitations(invitations)
+            } catch (error) {
+                console.error('Failed to load pending invitations:', error)
+            } finally {
+                setInvitationsLoading(false)
+            }
+        }
+
+        // Load organization roles
+        const loadRoles = async () => {
+            try {
+                const roles = await getOrgRoles(orgId)
+                setOrgRoles(roles)
+            } catch (error) {
+                console.error('Failed to load organization roles:', error)
+            } finally {
+                setRolesLoading(false)
+            }
+        }
+
+        loadInvitations()
+        loadRoles()
+    }, [orgId])
+
+    const LoadingSkeleton = () => (
+        <div className="space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+        </div>
+    )
 
     return (
         <div>
@@ -161,11 +153,25 @@ export default async function UserManagementPage({
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <UserList
-                                    users={users}
-                                    orgRoles={orgRoles}
-                                    orgId={orgId}
-                                />
+                                {usersLoading || rolesLoading ? (
+                                    <LoadingSkeleton />
+                                ) : usersError ? (
+                                    <div className="text-center py-8 text-red-500">
+                                        Error loading users: {usersError}
+                                        <button
+                                            onClick={() => fetchOrganizationUsers()}
+                                            className="ml-4 text-blue-500 hover:text-blue-700"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <UserList
+                                        users={users}
+                                        orgRoles={orgRoles}
+                                        orgId={orgId}
+                                    />
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -180,11 +186,15 @@ export default async function UserManagementPage({
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <UserInvitation
-                                    pendingInvitations={pendingInvitations}
-                                    orgRoles={orgRoles}
-                                    orgId={orgId}
-                                />
+                                {invitationsLoading || rolesLoading ? (
+                                    <LoadingSkeleton />
+                                ) : (
+                                    <UserInvitation
+                                        pendingInvitations={pendingInvitations}
+                                        orgRoles={orgRoles}
+                                        orgId={orgId}
+                                    />
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
