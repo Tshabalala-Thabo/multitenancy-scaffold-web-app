@@ -21,7 +21,7 @@ export interface ApiRole {
     }
 }
 
-export interface ApiOrganizationUser {
+export interface ApiOrganisationUser {
     id: number
     name: string
     last_name: string
@@ -40,7 +40,7 @@ export interface ApiOrganizationUser {
 }
 
 // Transformed interface for UI consumption
-export interface OrganizationUser {
+export interface OrganisationUser {
     id: number
     name: string
     last_name: string
@@ -54,16 +54,16 @@ export interface OrganizationUser {
 
 export const useOrganisationUsers = () => {
     const { user } = useAuth()
-    const [users, setUsers] = useState<OrganizationUser[]>([])
+    const [users, setUsers] = useState<OrganisationUser[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const { toast } = useToast()
     const hasInitialized = useRef(false)
 
-    const organizationId = user?.tenant_id
+    const organisationId = user?.tenant_id
 
     // Transform API data to UI format
-    const transformApiUser = (apiUser: ApiOrganizationUser): OrganizationUser => {
+    const transformApiUser = (apiUser: ApiOrganisationUser): OrganisationUser => {
         return {
             id: apiUser.id,
             name: apiUser.name,
@@ -77,15 +77,15 @@ export const useOrganisationUsers = () => {
         }
     }
 
-    const fetchOrganizationUsers = useCallback(async (orgId?: number) => {
-        const targetOrgId = orgId || organizationId
+    const fetchOrganisationUsers = useCallback(async (orgId?: number) => {
+        const targetOrgId = orgId || organisationId
         if (!targetOrgId) return []
 
         setIsLoading(true)
         setError(null)
         try {
             const response = await axios.get(`/api/tenants/${targetOrgId}/users`)
-            const apiUsers: ApiOrganizationUser[] = response.data
+            const apiUsers: ApiOrganisationUser[] = response.data
 
             // Transform API data to UI format
             const transformedUsers = apiUsers.map(transformApiUser)
@@ -112,25 +112,25 @@ export const useOrganisationUsers = () => {
         } finally {
             setIsLoading(false)
         }
-    }, [organizationId, toast])
+    }, [organisationId, toast])
 
     // Auto-fetch users when user is authenticated and has tenant_id
     useEffect(() => {
-        if (organizationId && !hasInitialized.current) {
+        if (organisationId && !hasInitialized.current) {
             hasInitialized.current = true
-            fetchOrganizationUsers()
+            fetchOrganisationUsers()
         }
-    }, [organizationId, fetchOrganizationUsers])
+    }, [organisationId, fetchOrganisationUsers])
 
     // Reset when organizationId changes (if user switches organizations)
     useEffect(() => {
         hasInitialized.current = false
         setUsers([])
         setError(null)
-    }, [organizationId])
+    }, [organisationId])
 
     const inviteUser = async (email: string, role: string = 'member') => {
-        if (!organizationId) {
+        if (!organisationId) {
             toast({
                 title: 'Error',
                 description: 'No organization found. Please ensure you are logged in.',
@@ -141,7 +141,7 @@ export const useOrganisationUsers = () => {
 
         setIsLoading(true)
         try {
-            const response = await axios.post(`/api/tenants/${organizationId}/users/invite`, {
+            const response = await axios.post(`/api/tenants/${organisationId}/users/invite`, {
                 email,
                 role,
             })
@@ -153,7 +153,7 @@ export const useOrganisationUsers = () => {
             })
 
             // Refresh users list
-            await fetchOrganizationUsers()
+            await fetchOrganisationUsers()
             return response.data
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to invite user'
@@ -169,7 +169,7 @@ export const useOrganisationUsers = () => {
     }
 
     const updateUserRole = async (userId: number, role: string) => {
-        if (!organizationId) {
+        if (!organisationId) {
             toast({
                 title: 'Error',
                 description: 'No organization found. Please ensure you are logged in.',
@@ -180,7 +180,7 @@ export const useOrganisationUsers = () => {
 
         setIsLoading(true)
         try {
-            const response = await axios.put(`/api/tenants/${organizationId}/users/${userId}`, {
+            const response = await axios.put(`/api/tenants/${organisationId}/users/${userId}`, {
                 role,
             })
 
@@ -210,7 +210,7 @@ export const useOrganisationUsers = () => {
     }
 
     const removeUser = async (userId: number) => {
-        if (!organizationId) {
+        if (!organisationId) {
             toast({
                 title: 'Error',
                 description: 'No organization found. Please ensure you are logged in.',
@@ -221,7 +221,7 @@ export const useOrganisationUsers = () => {
 
         setIsLoading(true)
         try {
-            await axios.delete(`/api/tenants/${organizationId}/users/${userId}`)
+            await axios.delete(`/api/tenants/${organisationId}/users/${userId}`)
 
             toast({
                 title: 'Success!',
@@ -243,15 +243,67 @@ export const useOrganisationUsers = () => {
         }
     }
 
+    const banUser = async (userId: number, reason?: string) => {
+        if (!organisationId) {
+            toast({
+                title: 'Error',
+                description: 'No organization found. Please ensure you are in a valid organisation.',
+                variant: 'destructive',
+            })
+            return
+        }
+
+        setIsLoading(true)
+        try {
+            const payload: { reason?: string } = {}
+            if (reason) {
+                payload.reason = reason
+            }
+
+            const response = await axios.post(`/api/tenants/${organisationId}/users/${userId}/ban`, payload)
+
+            toast({
+                title: 'Success!',
+                description: 'User has been banned from the organisation.',
+                variant: 'default',
+            })
+
+            // Refresh users list to reflect the ban
+            await fetchOrganisationUsers()
+            return response.data
+        } catch (err: unknown) {
+            let errorMessage = 'Failed to ban user'
+
+            if (isApiErrorResponse(err)) {
+                errorMessage = err.response?.data?.message || errorMessage
+                if (!err.response?.data?.errors) {
+                    setError(errorMessage)
+                }
+            } else if (err instanceof Error) {
+                errorMessage = err.message
+                setError(errorMessage)
+            }
+            toast({
+                title: 'Error',
+                description: errorMessage,
+                variant: 'destructive',
+            })
+            throw error
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return {
         users,
         isLoading,
         error,
-        organizationId,
-        fetchOrganizationUsers,
+        organisationId,
+        fetchOrganisationUsers,
         inviteUser,
         updateUserRole,
         removeUser,
-        refetch: () => fetchOrganizationUsers(),
+        banUser,
+        refetch: () => fetchOrganisationUsers(),
     }
 }
