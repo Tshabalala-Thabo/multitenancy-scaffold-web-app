@@ -85,11 +85,11 @@ export default function UserManagementPage({
 }) {
     const orgId = Number.parseInt(params.orgId)
     const {
-        users,
         isLoading: usersLoading,
         error: usersError,
-        fetchOrganizationUsers
     } = useOrganisationUsers()
+
+
 
     const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
     const [orgRoles, setOrgRoles] = useState<OrgRole[]>([])
@@ -158,16 +158,15 @@ export default function UserManagementPage({
                                 ) : usersError ? (
                                     <div className="text-center py-8 text-red-500">
                                         Error loading users: {usersError}
-                                        <button
-                                            onClick={() => fetchOrganizationUsers()}
-                                            className="ml-4 text-blue-500 hover:text-blue-700"
-                                        >
-                                            Retry
-                                        </button>
+                                        {/*<button*/}
+                                        {/*    onClick={() => fetchOrganizationUsers()}*/}
+                                        {/*    className="ml-4 text-blue-500 hover:text-blue-700"*/}
+                                        {/*>*/}
+                                        {/*    Retry*/}
+                                        {/*</button>*/}
                                     </div>
                                 ) : (
                                     <UserList
-                                        users={users}
                                         orgRoles={orgRoles}
                                         orgId={orgId}
                                     />

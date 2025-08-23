@@ -66,11 +66,10 @@ interface UserListProps {
     orgId: number
 }
 
-export function UserList({ users, orgRoles, orgId }: UserListProps) {
-    const { updateUserRole, removeUser, banUser, refetch } =
+export function UserList({ orgRoles, }: UserListProps) {
+    const { updateUserRole, removeUser, banUser, refetch, users } =
         useOrganisationUsers()
     const [searchTerm, setSearchTerm] = useState('')
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([])
     const [isChangeRolesDialogOpen, setIsChangeRolesDialogOpen] =
         useState(false)
     const [isBanUserDialogOpen, setIsBanUserDialogOpen] = useState(false)
@@ -79,6 +78,8 @@ export function UserList({ users, orgRoles, orgId }: UserListProps) {
     const [selectedRoles, setSelectedRoles] = useState<string[]>([])
     const [banReason, setBanReason] = useState('')
     const [banConfirmText, setBanConfirmText] = useState('')
+
+
     const filteredUsers = users.filter(
         user =>
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,16 +87,6 @@ export function UserList({ users, orgRoles, orgId }: UserListProps) {
             user.last_name.toLowerCase().includes(searchTerm.toLowerCase()),
     )
     const { user: currentUser } = useAuth()
-
-    const handleSelectAll = (checked: boolean) => {
-        setSelectedUsers(checked ? users.map(user => user.id) : [])
-    }
-
-    const handleSelectUser = (userId: number, checked: boolean) => {
-        setSelectedUsers(prev =>
-            checked ? [...prev, userId] : prev.filter(id => id !== userId),
-        )
-    }
 
     const handlePromoteToAdmin = async (user: OrganisationUser) => {
         try {
@@ -152,25 +143,6 @@ export function UserList({ users, orgRoles, orgId }: UserListProps) {
         } catch (error) {
             console.error('Failed to update user roles:', error)
         }
-    }
-
-    const handleSuspendUser = async (user: OrganisationUser) => {
-        // This would need a new API endpoint for suspending users
-        // For now, we'll show a placeholder toast
-        toast({
-            title: 'Feature not implemented',
-            description: 'User suspension is not yet implemented.',
-            variant: 'destructive',
-        })
-    }
-
-    const handleUnsuspendUser = async (user: OrganisationUser) => {
-        // This would need a new API endpoint for unsuspending users
-        toast({
-            title: 'Feature not implemented',
-            description: 'User unsuspension is not yet implemented.',
-            variant: 'destructive',
-        })
     }
 
     const handleRemoveUser = async (user: OrganisationUser) => {

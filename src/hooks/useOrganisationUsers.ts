@@ -268,8 +268,17 @@ export const useOrganisationUsers = () => {
                 variant: 'default',
             })
 
-            // Refresh users list to reflect the ban
-            await fetchOrganisationUsers()
+            console.log('previous users', users)
+            console.log('userId', userId)
+
+            // Remove the banned user from the users state
+            setUsers(prevUsers => {
+                console.log('prevUsers in setter:', prevUsers)
+                const newUsers = prevUsers.filter(user => user.id !== userId)
+                console.log('filtered users:', newUsers)
+                return newUsers
+            })
+
             return response.data
         } catch (err: unknown) {
             let errorMessage = 'Failed to ban user'
