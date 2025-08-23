@@ -38,7 +38,6 @@ export const useOrganisationAccess = () => {
                 description: errorMessage,
                 variant: 'destructive',
             })
-            throw error
         } finally {
             setIsLoading(false)
         }
