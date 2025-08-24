@@ -15,10 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Header from '@/components/Header'
 import { useOrganisationUsers } from '@/hooks/useOrganisationUsers'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Shield } from 'lucide-react'
 import { BannedUsers } from './components/BannedUsers'
 
-// Mock data fetching functions
 async function getPendingInvitations(orgId: number): Promise<PendingInvitation[]> {
     await new Promise(resolve => setTimeout(resolve, 300))
     return [
@@ -130,7 +128,6 @@ export default function UserManagementPage({ params }: { params: { orgId: string
                         <TabsTrigger value="banned">Banned Users</TabsTrigger>
                     </TabsList>
 
-                    {/* Users Tab */}
                     <TabsContent value="users" className="space-y-4">
                         <Card>
                             <CardHeader>
@@ -151,7 +148,6 @@ export default function UserManagementPage({ params }: { params: { orgId: string
                         </Card>
                     </TabsContent>
 
-                    {/* Invitations Tab */}
                     <TabsContent value="invitations" className="space-y-4">
                         <Card>
                             <CardHeader>
@@ -174,7 +170,6 @@ export default function UserManagementPage({ params }: { params: { orgId: string
                         </Card>
                     </TabsContent>
 
-                    {/* Banned Users Tab (now using component) */}
                     <TabsContent value="banned" className="space-y-4">
                         <Card>
                             <CardHeader>
