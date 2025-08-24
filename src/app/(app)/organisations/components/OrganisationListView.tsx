@@ -60,7 +60,7 @@ export const OrganisationListView = ({
             </div>
             <Button onClick={handleCreateOrganisation}>
               <Plus className="mr-2 h-4 w-4" />
-              Create Organisation
+              Create New Organisation
             </Button>
           </div>
         </CardHeader>

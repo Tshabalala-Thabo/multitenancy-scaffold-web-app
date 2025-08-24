@@ -8,7 +8,7 @@ import {
     CardTitle,
     CardDescription,
 } from '@/components/ui/card'
-import { Building2, MapPin, Users, Calendar, Plus } from 'lucide-react'
+import { Building2, MapPin, Users, Calendar } from 'lucide-react'
 import { formatDate } from '@/utils/dateFormatter'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -17,8 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Organisation } from '@/types/organisation'
 import Header from '@/components/Header'
-import { useEffect } from 'react'
-import { useOrganisationUser } from '@/hooks/useOrganisationUser'
+import { useOrganisationAccess } from '@/hooks/useOrganisationAccess'
 import { useAuth } from '@/hooks/auth'
 import { ReusableDialog } from '@/components/ReusableDialog'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -71,25 +70,15 @@ export const UserOrganisationView = ({
 }: UserOrganisationListProps & { isLoading?: boolean }) => {
     const [selectedOrganization, setSelectedOrganization] = useState<Organisation | null>(null)
 
-    // Track which specific organization is being joined
     const [joiningOrgId, setJoiningOrgId] = useState<number | null>(null)
 
-    const { joinOrganisation } = useOrganisationUser()
+    const { joinOrganisation } = useOrganisationAccess()
     const { user } = useAuth({})
 
     const handleJoinOrganization = async (orgId: number) => {
-        try {
-            setJoiningOrgId(orgId) // Set the specific org being joined
-            await joinOrganisation(orgId.toString())
-        } catch (error) {
-            console.error('Error joining organization:', error)
-        } finally {
-            setJoiningOrgId(null) // Clear the joining state
-        }
-    }
-
-    const handleLeaveOrganization = (orgId: number) => {
-        //
+        setJoiningOrgId(orgId)
+        await joinOrganisation(orgId.toString())
+        setJoiningOrgId(null)
     }
 
     function getInitials(name?: string, lastName?: string): string {
@@ -111,24 +100,16 @@ export const UserOrganisationView = ({
         }
     }
 
-    useEffect(() => {
-        console.log('selectedOrganization', selectedOrganization)
-    }, [selectedOrganization])
-
     return (
         <div>
             <Header title="Organisations" />
-            {/* Search and Filters */}
             <div className="flex flex-1 flex-col gap-4 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                {/* Organizations Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {isLoading ? (
-                        // Show skeleton loaders when loading
                         Array(5).fill(0).map((_, index) => (
                             <OrganisationCardSkeleton key={`skeleton-${index}`} />
                         ))
                     ) : (
-                        // Show actual organization cards when not loading
                         organisations.map(org => {
                             const isCurrentlyJoining = joiningOrgId === org.id
                             const isUserMember = user?.organisations?.some(
@@ -195,10 +176,6 @@ export const UserOrganisationView = ({
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => {
-                                                    console.log(
-                                                        'Setting selected org:',
-                                                        org,
-                                                    )
                                                     setSelectedOrganization(org)
                                                 }}
                                                 className="flex-1">
@@ -236,7 +213,6 @@ export const UserOrganisationView = ({
                 )}
             </div>
 
-            {/* Organization Details Modal */}
             <ReusableDialog
                 isOpen={!!selectedOrganization}
                 onClose={() => setSelectedOrganization(null)}

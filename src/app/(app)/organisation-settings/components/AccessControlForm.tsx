@@ -3,8 +3,8 @@
 import type React from 'react'
 import { useState, useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
 import { extractValidationErrors } from '@/types/api-error'
-import { useOrganisationUser } from '@/hooks/useOrganisationUser'
-import type { OrganizationSettings } from '@/types/organisation'
+import { useOrganisationSettings } from '@/hooks/useOrganisationSettings'
+import type { OrganisationSettings } from '@/types/organisation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,7 +15,7 @@ import Alert from '@/components/Alert'
 type ValidationErrors = Record<string, string | string[]>
 
 interface AccessControlFormProps {
-    initialSettings: OrganizationSettings
+    initialSettings: OrganisationSettings
     onDirtyChange?: (isDirty: boolean) => void
 }
 
@@ -25,7 +25,7 @@ export interface AccessControlFormRef {
 
 export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlFormProps>(
     ({ initialSettings, onDirtyChange }, ref) => {
-        const { updateAccessControl } = useOrganisationUser()
+        const { updateAccessControl } = useOrganisationSettings()
         const [isSubmitting, setIsSubmitting] = useState(false)
         const [isDirty, setIsDirty] = useState(false)
         const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({})
@@ -34,7 +34,7 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
         const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
         const [formUpdated, setFormUpdated] = useState(false)
 
-        const createInitialState = (settings: OrganizationSettings) => ({
+        const createInitialState = (settings: OrganisationSettings) => ({
             privacy_setting: settings.privacy_setting,
             two_factor_auth_required: settings.two_factor_auth_required,
             password_policy: { ...settings.password_policy },
@@ -148,7 +148,7 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
             clearFieldError(field)
         }
 
-        const handlePasswordPolicyChange = (field: keyof OrganizationSettings['password_policy'], value: string | number | boolean) => {
+        const handlePasswordPolicyChange = (field: keyof OrganisationSettings['password_policy'], value: string | number | boolean) => {
             setFormData(prev => ({
                 ...prev,
                 password_policy: {
@@ -293,9 +293,9 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
                                 type="button"
                                 variant="outline"
                                 className={`flex-1 transition-all duration-300 ${internalPulse
-                                        ? 'animate-pulse border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/75'
-                                        : ''
-                                    }`}
+                                    ? 'animate-pulse border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/75'
+                                    : ''
+                                }`}
                                 onClick={handleCancel}
                                 disabled={isSubmitting}
                             >
@@ -304,9 +304,9 @@ export const AccessControlForm = forwardRef<AccessControlFormRef, AccessControlF
                             <Button
                                 type="submit"
                                 className={`flex-1 transition-all duration-300 ${internalPulse
-                                        ? 'animate-pulse border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/75'
-                                        : ''
-                                    }`}
+                                    ? 'animate-pulse border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/75'
+                                    : ''
+                                }`}
                                 disabled={isSubmitting || !isDirty}
                             >
                                 {isSubmitting ? "Saving..." : "Save Changes"}

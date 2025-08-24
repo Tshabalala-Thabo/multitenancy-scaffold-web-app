@@ -1,5 +1,6 @@
 'use client'
 
+import type React from 'react'
 import {
     useRef,
     useState,
@@ -8,19 +9,18 @@ import {
     useImperativeHandle,
     forwardRef,
 } from 'react'
-import type React from 'react'
-import Alert from '@/components/Alert'
+import { extractValidationErrors } from '@/types/api-error'
+import { useOrganisationSettings } from '@/hooks/useOrganisationSettings'
+import type { OrganisationSettings } from '@/types/organisation'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
 import { ImageUpload } from '@/components/ui/image-upload'
-import { BasicInfoData } from '@/hooks/useOrganisationUser'
-import { extractValidationErrors } from '@/types/api-error'
-import type { OrganizationSettings } from '@/types/organisation'
-import { useOrganisationUser } from '@/hooks/useOrganisationUser'
+import { BasicInfoData } from '@/hooks/useOrganisationSettings'
+import Alert from '@/components/Alert'
 
 interface BasicInfoFormProps {
-    initialSettings: OrganizationSettings
+    initialSettings: OrganisationSettings
     onDirtyChange?: (isDirty: boolean) => void
 }
 
@@ -56,7 +56,7 @@ export const BasicInfoForm = forwardRef<BasicInfoFormRef, BasicInfoFormProps>(
         const [showWarning, setShowWarning] = useState(false)
         const [internalPulse, setInternalPulse] = useState(false)
         const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-        const { updateBasicInfo } = useOrganisationUser()
+        const { updateBasicInfo } = useOrganisationSettings()
         const [formUpdated, setFormUpdated] = useState(false)
         const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({})
 

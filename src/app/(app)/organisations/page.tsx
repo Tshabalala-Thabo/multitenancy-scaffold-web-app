@@ -1,35 +1,53 @@
 'use client'
 
-import { useOrganisation } from '@/hooks/useOrganisation'
+import { useState } from 'react'
+import usePermissions from '@/hooks/usePermissions'
+import { Organisation } from '@/types/organisation'
 import { OrganisationForm } from '@/components/OrganisationForm'
-import { OrganisationDetailView } from './components/OrganisationDetailView'
+import { useOrganisationCore } from '@/hooks/useOrganisationCore'
 import { OrganisationListView } from './components/OrganisationListView'
 import { UserOrganisationView } from './components/UserOrganisationView'
-import { useAuth } from '@/hooks/auth'
-import usePermissions from '@/hooks/usePermissions'
+import { OrganisationDetailView } from './components/OrganisationDetailView'
 
 export default function OrganisationsPage() {
+    const [currentView, setCurrentView] = useState('list')
+    const [selectedOrganisation, setSelectedOrganisation] =
+        useState<Organisation | null>(null)
+
     const {
         searchTerm,
         setSearchTerm,
         isModalOpen,
         setIsModalOpen,
-        editingOrganisation,
-        currentView,
-        selectedOrganisation,
         filteredOrganisations,
-        handleCreateOrganisation,
-        handleEditOrganisation,
-        handleViewOrganisation,
-        handleBackToList,
-        handleDeleteOrganisation,
         handleSaveOrganisation,
+        editingOrganisation,
+        setEditingOrganisation,
         isLoading
-    } = useOrganisation()
+    } = useOrganisationCore()
 
     const { isSuperAdmin } = usePermissions()
 
-    const { user } = useAuth()
+    const handleViewOrganisation = (organisation: Organisation) => {
+        setSelectedOrganisation(organisation)
+        setCurrentView('detail')
+    }
+
+    const handleBackToList = () => {
+        setCurrentView('list')
+        setSelectedOrganisation(null)
+    }
+
+    const handleCreateOrganisation = () => {
+        setEditingOrganisation(null)
+        setIsModalOpen(true)
+    }
+
+    const handleEditOrganisation = (organisation: Organisation) => {
+        setEditingOrganisation(organisation)
+        setIsModalOpen(true)
+    }
+
     return (
         <main>
             {isSuperAdmin() ? (
@@ -41,7 +59,7 @@ export default function OrganisationsPage() {
                         handleCreateOrganisation={handleCreateOrganisation}
                         handleEditOrganisation={handleEditOrganisation}
                         handleViewOrganisation={handleViewOrganisation}
-                        handleDeleteOrganisation={handleDeleteOrganisation}
+                        handleDeleteOrganisation={() => {}} // TODO : handle delete
                     />
                 ) : (
                     <OrganisationDetailView
