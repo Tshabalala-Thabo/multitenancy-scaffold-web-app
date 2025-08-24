@@ -15,13 +15,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Header from '@/components/Header'
 import { useOrganisationUsers } from '@/hooks/useOrganisationUsers'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Shield } from 'lucide-react'
+import { BannedUsers } from './components/BannedUsers'
 
-// Mock data fetching functions for pending invitations and roles
-// Replace these with actual API calls when available
-async function getPendingInvitations(
-    orgId: number,
-): Promise<PendingInvitation[]> {
-    // Simulate API call
+// Mock data fetching functions
+async function getPendingInvitations(orgId: number): Promise<PendingInvitation[]> {
     await new Promise(resolve => setTimeout(resolve, 300))
     return [
         {
@@ -44,14 +42,12 @@ async function getPendingInvitations(
 }
 
 async function getOrgRoles(orgId: number): Promise<OrgRole[]> {
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 200))
     return [
         {
             id: 1,
             name: 'administrator',
-            description:
-                'Full access to organization settings and user management.',
+            description: 'Full access to organization settings and user management.',
             is_custom: false,
             permissions: [],
             created_at: '',
@@ -78,18 +74,9 @@ async function getOrgRoles(orgId: number): Promise<OrgRole[]> {
     ]
 }
 
-export default function UserManagementPage({
-                                               params,
-                                           }: {
-    params: { orgId: string }
-}) {
+export default function UserManagementPage({ params }: { params: { orgId: string } }) {
     const orgId = Number.parseInt(params.orgId)
-    const {
-        isLoading: usersLoading,
-        error: usersError,
-    } = useOrganisationUsers()
-
-
+    const { isLoading: usersLoading, error: usersError } = useOrganisationUsers()
 
     const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
     const [orgRoles, setOrgRoles] = useState<OrgRole[]>([])
@@ -97,7 +84,6 @@ export default function UserManagementPage({
     const [rolesLoading, setRolesLoading] = useState(true)
 
     useEffect(() => {
-        // Load pending invitations
         const loadInvitations = async () => {
             try {
                 const invitations = await getPendingInvitations(orgId)
@@ -109,7 +95,6 @@ export default function UserManagementPage({
             }
         }
 
-        // Load organization roles
         const loadRoles = async () => {
             try {
                 const roles = await getOrgRoles(orgId)
@@ -139,18 +124,18 @@ export default function UserManagementPage({
             <Header title="User Management" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
                 <Tabs defaultValue="users" className="space-y-2">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="users">Organization Users</TabsTrigger>
                         <TabsTrigger value="invitations">Invitations</TabsTrigger>
+                        <TabsTrigger value="banned">Banned Users</TabsTrigger>
                     </TabsList>
 
+                    {/* Users Tab */}
                     <TabsContent value="users" className="space-y-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Organization Users</CardTitle>
-                                <CardDescription>
-                                    Manage users within your organization.
-                                </CardDescription>
+                                <CardDescription>Manage users within your organization.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 {usersLoading || rolesLoading ? (
@@ -158,30 +143,21 @@ export default function UserManagementPage({
                                 ) : usersError ? (
                                     <div className="text-center py-8 text-red-500">
                                         Error loading users: {usersError}
-                                        {/*<button*/}
-                                        {/*    onClick={() => fetchOrganizationUsers()}*/}
-                                        {/*    className="ml-4 text-blue-500 hover:text-blue-700"*/}
-                                        {/*>*/}
-                                        {/*    Retry*/}
-                                        {/*</button>*/}
                                     </div>
                                 ) : (
-                                    <UserList
-                                        orgRoles={orgRoles}
-                                        orgId={orgId}
-                                    />
+                                    <UserList orgRoles={orgRoles} />
                                 )}
                             </CardContent>
                         </Card>
                     </TabsContent>
 
+                    {/* Invitations Tab */}
                     <TabsContent value="invitations" className="space-y-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Invite New Users</CardTitle>
                                 <CardDescription>
-                                    Send invitations to new members to join your
-                                    organization.
+                                    Send invitations to new members to join your organization.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -194,6 +170,24 @@ export default function UserManagementPage({
                                         orgId={orgId}
                                     />
                                 )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Banned Users Tab (now using component) */}
+                    <TabsContent value="banned" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    {/*<Shield className="h-5 w-5" />*/}
+                                    Banned Users
+                                </CardTitle>
+                                <CardDescription>
+                                    Manage user bans and review moderation actions.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <BannedUsers />
                             </CardContent>
                         </Card>
                     </TabsContent>
